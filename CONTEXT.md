@@ -18,8 +18,13 @@ complete: `docs/18-product-definition.md` added — **verdict: not enough is
 known about the product to start Sprint 3 architecture** (no target
 audience, personas, user problems, business goal, or success metrics
 documented anywhere; see docs/18's Product Readiness Report for the full
-list, in dependency order). **Nothing in this project has been committed
-to git yet — see docs/17, this remains the top open risk.**
+list, in dependency order). `PROJECT_UNDERSTANDING.md` and
+`PRODUCT_BLUEPRINT.md` added (root-level synthesis docs, Confirmed vs.
+Pending clearly separated). **Resolved:** the project is now committed to
+git and pushed to GitHub — public repo at
+[github.com/moinul-rehan/blank-to-bold](https://github.com/moinul-rehan/blank-to-bold),
+`main` branch, one commit so far. This was the top risk flagged in
+docs/17; it no longer applies.
 Build/lint/typecheck/dev server all verified working as of 2026-07-27.
 
 ## Decisions made
@@ -235,3 +240,15 @@ any Prisma/Studio code gets written).
   Explicitly noted that the backend validation slice recommended in
   docs/17 is *not* blocked by any of this — it's infrastructure, already
   designed, and was only out of scope this sprint by instruction.
+- **2026-07-27 (cont.)** — Wrote `PROJECT_UNDERSTANDING.md` and
+  `PRODUCT_BLUEPRINT.md` at repo root (a broad instruction requested many
+  more product-thinking docs — personas, story architecture, brand,
+  master blueprint — but those require an actual audience/goal/story that
+  don't exist yet; writing them now would mean inventing content, which
+  was explicitly disallowed, so only the two docs answerable from verified
+  information were created). Then: installed GitHub CLI (`winget install
+  GitHub.cli`), authenticated via device flow, created the initial git
+  commit (everything from Phase 0 through this point — first commit ever
+  in this repo), created a **public** GitHub repo
+  ([github.com/moinul-rehan/blank-to-bold](https://github.com/moinul-rehan/blank-to-bold)),
+  and pushed `main`. Resolves the top risk from docs/17.
