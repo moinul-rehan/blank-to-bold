@@ -69,6 +69,12 @@ Design complete, pending approval; nothing implemented yet.
       landing entry point, replacing the `create-next-app` boilerplate on
       `/`. First feature to actually exercise the motion/theme systems
       with real (if placeholder-copy) content and a real accent color.
+- [x] Experience Shell built (`src/experience/`, `src/systems/experience/`)
+      — scene orchestration, transitions, progress, overlay layer,
+      dev-only debug HUD. Generic infrastructure, no scene content, not
+      yet mounted anywhere — see
+      [03-folder-architecture.md](./03-folder-architecture.md#the-experience-shell).
+      How the Door and the Shell relate is an open decision.
 - [ ] Case study / project pages — blocked on story architecture
 - [ ] Accessibility pass (keyboard, screen reader, reduced motion, contrast)
 - [ ] Performance pass (Lighthouse baseline)

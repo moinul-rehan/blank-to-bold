@@ -316,8 +316,12 @@ identity/SEO, all read through a typed service layer, never hardcoded.
 - **Story architecture** — the narrative arc, chapters/acts, and
   emotional/tonal shifts of the experience are undefined
   ([07-story-architecture.md](./07-story-architecture.md)); this blocks the
-  scene map ([08-scene-map.md](./08-scene-map.md)) and the real shape of
-  `ExperienceProvider`. Now has real seed material from §4's Honest Goal.
+  scene map ([08-scene-map.md](./08-scene-map.md)) and what actual scenes
+  exist. (The Experience Shell — scene orchestration, transitions,
+  progress — is now built as generic infrastructure; see
+  [03-folder-architecture.md](./03-folder-architecture.md#the-experience-shell).
+  Content is what's still missing.) Now has real seed material from §4's
+  Honest Goal.
 - **Brand direction** — no color palette, voice, or brand identity exists
   beyond shadcn's neutral placeholder theme.
 - **Typography** — still placeholder (Geist), no font decision made.

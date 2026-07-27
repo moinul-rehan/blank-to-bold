@@ -42,9 +42,11 @@ src/
 │   ├── motion/             # GSAP config/defaults, duration+ease tokens (reads CSS vars), pure motion utils
 │   ├── interaction/        # Pointer-type (fine/coarse) detection
 │   ├── cursor/             # Cursor variant resolution (`data-cursor` attribute → variant)
-│   └── theme/              # Theme resolution/application logic (Theme type, applyTheme, system-preference watch)
+│   ├── theme/              # Theme resolution/application logic (Theme type, applyTheme, system-preference watch)
+│   └── experience/         # Scene ordering/progress/transition-timing logic — see "The Experience Shell" below
+├── experience/             # The Experience Shell's React layer (SceneManager, transitions, overlay, debug) — see below
 ├── animations/             # Reusable GSAP animation definitions/timelines, referenced by systems/features (empty so far)
-├── providers/               # Global React context providers (theme, Lenis, animation, cursor, sound, experience)
+├── providers/               # React context providers — see "Global vs. scoped providers" below
 ├── hooks/                  # Reusable React hooks
 ├── stores/                 # Zustand stores (client-side UI state — not a substitute for the database)
 ├── lib/                    # External integrations, SDK wrappers, shadcn's cn() helper
@@ -98,7 +100,7 @@ consistently:
 - **Engine** (`*.engine.ts`, in the system folder) — pure, framework-agnostic
   logic. No React, no Zustand. Testable in isolation.
 - **Store** (`src/stores/*-store.ts`) — Zustand state, where the system
-  needs reactive state at all (motion doesn't; theme/cursor do).
+  needs reactive state at all (motion doesn't; theme/cursor/experience do).
 - **Provider** (`src/providers/*-provider.tsx`) — the React wiring: calls
   the engine, reads/writes the store, subscribes to browser events, renders
   nothing itself.
@@ -107,19 +109,58 @@ A component never calls `window.matchMedia` or touches `document.*`
 directly for something a system already owns — it goes through the
 provider's hook (`useLenis()`, `useCursorEnabled()`, etc.) or the store.
 
-## `providers/`
+## `providers/` — global vs. scoped
 
-Global providers composed once in the root layout:
+**Global** — composed once in the root layout, via `AppProviders`:
 
 - `ThemeProvider`
 - `LenisProvider`
 - `AnimationProvider`
 - `CursorProvider`
 - `SoundProvider`
-- `ExperienceProvider`
+
+**Scoped** — `ExperienceProvider` is deliberately _not_ in `AppProviders`.
+It's scene-registry-driven (it needs to know which scenes exist to
+register them), so it can't be parameterless and global the way the
+others are. It's owned by whatever mounts `ExperienceShell`
+(`src/experience/experience-shell.tsx`), not the root layout.
 
 See [09-component-system.md](./09-component-system.md) for how these get
 documented as they're built out.
+
+## The Experience Shell
+
+`src/experience/` + `src/systems/experience/` together are the
+content-agnostic runtime the public Experience's scenes plug into — built
+before any scene content, per explicit instruction ("nothing hardcoded,"
+"do not design UI, only build the framework").
+
+- **`systems/experience/`** (engine — pure, no React): `experience.types.ts`
+  (`SceneId`, `TransitionPhase`), `scene-manager.engine.ts` (next/previous
+  scene by position), `progress.engine.ts` (0–1 progress by scene
+  position), `transition.engine.ts` (shared transition timing, reused from
+  `motion.tokens.ts`).
+- **`stores/experience-store.ts`** — scene registry, active/previous
+  scene, transition phase, `hasEntered`.
+- **`providers/experience-context.tsx`** + **`providers/experience-provider.tsx`** —
+  the context/hook (`useExperience()`) and the provider that wires the
+  store + engine together and registers whatever scenes it's given.
+- **`experience/scene-manager.tsx`** — renders whichever scene is active;
+  takes a `SceneRegistry` (`Record<SceneId, ComponentType>`) as a prop, so
+  it has zero knowledge of what scenes exist — same "engine doesn't know
+  about content" discipline as everything else in this codebase.
+- **`experience/scene-transition-manager.tsx`** — a generic crossfade
+  triggered when the active scene changes; doesn't know what's inside a
+  scene, only that it changed. Respects reduced motion.
+- **`experience/overlay-layer.tsx`** — an empty, non-interactive
+  fixed layer above all scenes (`z-overlay` token) — a slot for future
+  cross-scene UI (progress indicator, custom cursor), not itself any UI.
+- **`experience/debug-mode.tsx`** — dev-only HUD (`NODE_ENV === "development"`
+  gated) showing live scene/transition/progress state.
+- **`experience/experience-shell.tsx`** — composes all of the above. The
+  "root experience layout": `<ExperienceShell scenes={{ ... }} />`. Not
+  currently mounted anywhere — built as standalone infrastructure; how it
+  connects to an actual route is a separate decision.
 
 ## Backend layers (planned — not yet created)
 

@@ -135,10 +135,12 @@ proposition, vision refinement, qualitative success metric — see
 
 **Still open:**
 
-- **Story architecture** — not yet defined; blocks scene map and the real
-  shape of `ExperienceProvider`. Now has real seed material (the Honest
-  Goal — "decisions, reasoning, failures, iterations" — see docs/18 §4)
-  but hasn't been written into
+- **Story architecture** — not yet defined; blocks the scene map and what
+  actual scenes exist. (The Experience Shell itself — scene orchestration,
+  transitions, progress — is now built and generic; see below. What's
+  still missing is the content that fills it.) Has real seed material (the
+  Honest Goal — "decisions, reasoning, failures, iterations" — see docs/18
+  §4) but hasn't been written into
   [docs/07-story-architecture.md](./docs/07-story-architecture.md) yet.
 - **Brand direction** — color, voice, identity. No `docs/01-brand.md` was
   ever created; still nothing beyond shadcn's neutral placeholder theme.
@@ -298,3 +300,31 @@ GitHub.cli`), authenticated via device flow, created the initial git
   the live dev server (screenshot capture was unavailable this session due
   to a Browser-pane display issue, not an app bug). Updated
   `docs/10-roadmap.md` Phase 3 to reflect this.
+- **2026-07-27 (cont.)** — User course-corrected: not a portfolio, an
+  interactive digital experience — explicitly "do NOT create a homepage,
+  hero content, or portfolio sections," build only the Experience Shell
+  (scene manager, experience provider/context, scene transition manager,
+  progress manager, overlay layer, dev-only debug mode; modular, nothing
+  hardcoded). Built as standalone infrastructure — deliberately did NOT
+  wire it into `page.tsx`; the Door built last turn still renders as
+  before, untouched. New: `src/systems/experience/` (engine —
+  `experience.types.ts`, `scene-manager.engine.ts`, `progress.engine.ts`,
+  `transition.engine.ts`) and `src/experience/` (React layer —
+  `scene-manager.tsx`, `scene-transition-manager.tsx`, `overlay-layer.tsx`,
+  `debug-mode.tsx`, `experience-shell.tsx`), same engine/store/provider
+  pattern as motion/interaction/cursor/theme. Rebuilt `experience-store.ts`
+  (scene registry, active/previous scene, transition phase) and
+  `experience-provider.tsx` (now scene-registry-driven, takes `sceneIds`
+  as a prop) — added `experience-context.tsx` as the explicit
+  context/`useExperience()` hook, split from the provider per the user's
+  requirements list. **Architecture consequence:** `ExperienceProvider`
+  can no longer be parameterless/global (it needs to know which scenes
+  exist), so it's removed from `AppProviders` — now 5 global providers, not
+  6; `ExperienceProvider` is owned by wherever `ExperienceShell` gets
+  mounted. Updated `docs/03-folder-architecture.md` (new "The Experience
+  Shell" section, global-vs-scoped providers) and `docs/10-roadmap.md`.
+  Verified lint/typecheck/build clean; could not runtime-verify in-browser
+  since nothing mounts `ExperienceShell` yet (no test runner exists either
+  — flagged in docs/17). **Open decision for next turn:** how the Door
+  relates to the Shell — does it become the first registered scene, or
+  stay separate?
