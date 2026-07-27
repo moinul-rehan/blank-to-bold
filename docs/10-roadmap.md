@@ -65,7 +65,11 @@ Design complete, pending approval; nothing implemented yet.
 
 ## Phase 3 — First Scenes
 
-- [ ] First real scene/section built end-to-end
+- [x] First real scene built: the Door (`src/features/door/`) — the
+      landing entry point, replacing the `create-next-app` boilerplate on
+      `/`. First feature to actually exercise the motion/theme systems
+      with real (if placeholder-copy) content and a real accent color.
+- [ ] Case study / project pages — blocked on story architecture
 - [ ] Accessibility pass (keyboard, screen reader, reduced motion, contrast)
 - [ ] Performance pass (Lighthouse baseline)
 

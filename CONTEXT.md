@@ -274,3 +274,27 @@ GitHub.cli`), authenticated via device flow, created the initial git
   `PROJECT_UNDERSTANDING.md`, and `CLAUDE.md`'s opening line, all to keep
   them consistent with the new confirmed decisions — nothing invented,
   everything traceable to Rehan's direct answers.
+- **2026-07-27 (cont.)** — Built the first real feature: the Door
+  (`src/features/door/`), the landing entry point, replacing the
+  `create-next-app` boilerplate on `/`. Concept: dramatize the project
+  name itself — starts blank (monochrome type), turns bold (accent color)
+  shortly after — giving the one animation on this screen an actual reason
+  to exist rather than being decoration. Picked a first-pass brand accent
+  (warm amber/orange, `oklch(0.65 0.19 45)` light / `oklch(0.72 0.18 50)`
+  dark, set as shadcn's `--primary`/`--ring`) explicitly to avoid the
+  "placeholder brand calcifies by inertia" risk flagged in docs/18/CONTEXT
+  — reversible via one token edit. Copy is adapted from the already-confirmed
+  guiding sentence (§1 of docs/18), not invented. Implementation notes:
+  used `@gsap/react`'s `useGSAP` (previously installed, unused, flagged in
+  docs/17) for the scroll-cue bounce; deliberately did NOT use GSAP to
+  tween the color itself (GSAP's color parser doesn't reliably handle
+  `oklch()` — used a plain CSS `transition-colors` with the `duration-slow`/
+  `ease-emphasized` Tailwind utilities instead, which also finally
+  exercises those previously-unused `@theme inline` utility mirrors noted
+  in docs/11). Respects `prefers-reduced-motion` via the existing
+  `AnimationProvider` context — reduced-motion visitors see the bold state
+  immediately, no bounce. Verified: lint/typecheck/build clean; centering
+  and both light/dark accent colors confirmed via computed-style checks in
+  the live dev server (screenshot capture was unavailable this session due
+  to a Browser-pane display issue, not an app bug). Updated
+  `docs/10-roadmap.md` Phase 3 to reflect this.
