@@ -1,0 +1,455 @@
+// DESIGN DRAFT — not yet migrated or installed.
+// See docs/14-database-schema.md for the rationale behind every model here.
+// Do not run `prisma migrate` against this until it's been reviewed/approved.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  SVG
+  PDF
+  LOTTIE
+  RIVE
+  MODEL_3D
+}
+
+enum StorageProvider {
+  LOCAL
+  CLOUDINARY
+  S3
+}
+
+enum PlaygroundType {
+  UI_EXPERIMENT
+  MOTION_STUDY
+  SMALL_PROJECT
+  EXPLORATION
+}
+
+// ---------------------------------------------------------------------------
+// Auth (Better Auth) — single-user for now; shape kept close to what Better
+// Auth expects so upgrading to multi-user later doesn't require a rewrite.
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  media    Media[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id           String   @id @default(cuid())
+  userId       String
+  providerId   String
+  accountId    String
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+// ---------------------------------------------------------------------------
+// Shared vocabulary — manageable from Studio, so adding one never touches code.
+// ---------------------------------------------------------------------------
+
+model Category {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  projects  ProjectCategory[]
+  blogPosts BlogPostCategory[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  projects        ProjectTag[]
+  blogPosts       BlogPostTag[]
+  playgroundItems PlaygroundTag[]
+
+  @@map("tags")
+}
+
+/// Shared by Project.technologies and CareerEntry.skills — same underlying
+/// vocabulary, so a skill/tech only needs to be created once.
+model Skill {
+  id   String @id @default(cuid())
+  name String @unique
+
+  projects      ProjectSkill[]
+  careerEntries CareerEntrySkill[]
+
+  @@map("skills")
+}
+
+/// Shared by Project and CareerEntry so a company's logo is uploaded once,
+/// not re-uploaded per project.
+model Company {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  website String?
+  logoId  String?
+  logo    Media?  @relation(fields: [logoId], references: [id])
+
+  projects      Project[]
+  careerEntries CareerEntry[]
+
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------------------
+// Media Library
+// ---------------------------------------------------------------------------
+
+model Media {
+  id               String          @id @default(cuid())
+  type             MediaType
+  storageProvider  StorageProvider @default(LOCAL)
+  url              String
+  originalFilename String
+  mimeType         String
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  durationSeconds  Float?
+  altText          String?
+  caption          String?
+  uploadedById     String?
+  uploadedBy       User?           @relation(fields: [uploadedById], references: [id])
+  createdAt        DateTime        @default(now())
+
+  companyLogos   Company[]
+  projectsCover  Project[]            @relation("ProjectCover")
+  projectsThumb  Project[]            @relation("ProjectThumbnail")
+  projectGallery ProjectGalleryItem[]
+  blogPosts      BlogPost[]
+  careerEntries  CareerEntry[]
+  playgroundItems PlaygroundItem[]
+
+  @@map("media")
+}
+
+// ---------------------------------------------------------------------------
+// Content Blocks — shared by Project case studies and Blog posts.
+// New block `type`s are additive: register a Zod schema + editor + renderer
+// in src/blocks/registry.ts, no migration needed.
+// ---------------------------------------------------------------------------
+
+model ContentBlock {
+  id    String @id @default(cuid())
+  type  String
+  data  Json
+  order Int
+
+  projectId  String?
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  blogPostId String?
+  blogPost   BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, order])
+  @@index([blogPostId, order])
+  @@map("content_blocks")
+}
+
+// ---------------------------------------------------------------------------
+// Projects
+// ---------------------------------------------------------------------------
+
+model Project {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  role      String?
+  duration  String?
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  liveUrl   String?
+  githubUrl String?
+  figmaUrl  String?
+  team      Json? /// [{ name, role, link? }]
+  metrics   Json? /// [{ label, value, description? }]
+  seo       Json? /// shared SeoMetadata shape — see docs/14
+
+  coverImageId String?
+  coverImage   Media?  @relation("ProjectCover", fields: [coverImageId], references: [id])
+  thumbnailId  String?
+  thumbnail    Media?  @relation("ProjectThumbnail", fields: [thumbnailId], references: [id])
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  categories ProjectCategory[]
+  tags       ProjectTag[]
+  skills     ProjectSkill[]
+  gallery    ProjectGalleryItem[]
+  blocks     ContentBlock[]
+  featuredIn ExperienceFeaturedProject[]
+
+  @@map("projects")
+}
+
+model ProjectGalleryItem {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media   @relation(fields: [mediaId], references: [id])
+  order     Int
+
+  @@unique([projectId, mediaId])
+  @@index([projectId, order])
+  @@map("project_gallery_items")
+}
+
+model ProjectCategory {
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, categoryId])
+  @@map("project_categories")
+}
+
+model ProjectTag {
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@map("project_tags")
+}
+
+model ProjectSkill {
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+  @@map("project_skills")
+}
+
+// ---------------------------------------------------------------------------
+// Career Timeline
+// ---------------------------------------------------------------------------
+
+model CareerEntry {
+  id             String    @id @default(cuid())
+  companyId      String
+  company        Company   @relation(fields: [companyId], references: [id])
+  position       String
+  startDate      DateTime
+  endDate        DateTime?
+  description    String?
+  logoOverrideId String?
+  logoOverride   Media?    @relation(fields: [logoOverrideId], references: [id])
+  achievements   Json? /// string[]
+  order          Int       @default(0)
+
+  skills CareerEntrySkill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("career_entries")
+}
+
+model CareerEntrySkill {
+  careerEntryId String
+  careerEntry   CareerEntry @relation(fields: [careerEntryId], references: [id], onDelete: Cascade)
+  skillId       String
+  skill         Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([careerEntryId, skillId])
+  @@map("career_entry_skills")
+}
+
+// ---------------------------------------------------------------------------
+// Blogs
+// ---------------------------------------------------------------------------
+
+model BlogPost {
+  id              String  @id @default(cuid())
+  title           String
+  slug            String  @unique
+  excerpt         String?
+  featuredImageId String?
+  featuredImage   Media?  @relation(fields: [featuredImageId], references: [id])
+  seo             Json?
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  categories BlogPostCategory[]
+  tags       BlogPostTag[]
+  blocks     ContentBlock[]
+
+  @@map("blog_posts")
+}
+
+model BlogPostCategory {
+  blogPostId String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, categoryId])
+  @@map("blog_post_categories")
+}
+
+model BlogPostTag {
+  blogPostId String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tagId      String
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, tagId])
+  @@map("blog_post_tags")
+}
+
+// ---------------------------------------------------------------------------
+// Playground
+// ---------------------------------------------------------------------------
+
+model PlaygroundItem {
+  id           String         @id @default(cuid())
+  title        String
+  slug         String         @unique
+  description  String?
+  type         PlaygroundType
+  coverMediaId String?
+  coverMedia   Media?         @relation(fields: [coverMediaId], references: [id])
+  liveUrl      String?
+  embedCode    String?
+
+  status    ContentStatus @default(DRAFT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  tags PlaygroundTag[]
+
+  @@map("playground_items")
+}
+
+model PlaygroundTag {
+  playgroundItemId String
+  playgroundItem   PlaygroundItem @relation(fields: [playgroundItemId], references: [id], onDelete: Cascade)
+  tagId            String
+  tag              Tag            @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([playgroundItemId, tagId])
+  @@map("playground_tags")
+}
+
+// ---------------------------------------------------------------------------
+// Global Settings — singleton (id is always 1; @id + @default(1) makes a
+// second row a uniqueness violation, enforcing "only one settings row" at
+// the database level rather than trusting application code).
+// ---------------------------------------------------------------------------
+
+model SiteSettings {
+  id            Int      @id @default(1)
+  name          String
+  bio           String?
+  socialLinks   Json? /// [{ platform, url }]
+  contactEmail  String?
+  contactInfo   Json?
+  seo           Json?
+  ogImageId     String?
+  themeSettings Json?
+  updatedAt     DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+// ---------------------------------------------------------------------------
+// Experience Settings — singleton, drives the public site's configurable
+// behaviour. Same enforced-singleton pattern as SiteSettings.
+// ---------------------------------------------------------------------------
+
+model ExperienceSettings {
+  id                   Int      @id @default(1)
+  homepageScene        String?
+  heroVariant          String?
+  cursorStyle          String?
+  motionIntensity      String? /// "low" | "medium" | "high"
+  theme                String? /// "light" | "dark" | "system"
+  introAnimationConfig Json?
+  navigationBehaviour  Json?
+  updatedAt            DateTime @updatedAt
+
+  featuredProjects ExperienceFeaturedProject[]
+
+  @@map("experience_settings")
+}
+
+model ExperienceFeaturedProject {
+  experienceSettingsId Int
+  experienceSettings   ExperienceSettings @relation(fields: [experienceSettingsId], references: [id])
+  projectId            String
+  project              Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  order                Int
+
+  @@id([experienceSettingsId, projectId])
+  @@map("experience_featured_projects")
+}
