@@ -11,27 +11,24 @@ principles, stack, architecture, standards, motion, story, roadmap, etc.).
 (app shell, four frontend systems — motion/interaction/cursor/theme,
 design tokens). Phase 1.5 (Backend Architecture & Creator Studio) **design
 is done, pending approval** — no backend code written yet. Sprint 1.1
-(Foundation Finalization) complete: `.env.example` added, two speculative
-empty folders removed (`assets/`, `content/`), doc contradictions fixed,
-`docs/17-engineering-review.md` added. Sprint 2 (Product Definition)
-complete: `docs/18-product-definition.md` added — **verdict: not enough is
-known about the product to start Sprint 3 architecture** (no target
-audience, personas, user problems, business goal, or success metrics
-documented anywhere; see docs/18's Product Readiness Report for the full
-list, in dependency order). `PROJECT_UNDERSTANDING.md` and
-`PRODUCT_BLUEPRINT.md` added (root-level synthesis docs, Confirmed vs.
-Pending clearly separated). **Resolved:** the project is now committed to
-git and pushed to GitHub — public repo at
-[github.com/moinul-rehan/blank-to-bold](https://github.com/moinul-rehan/blank-to-bold),
-`main` branch, one commit so far. This was the top risk flagged in
-docs/17; it no longer applies.
+(Foundation Finalization) complete. Sprint 2 (Product Definition) complete
+and **substantially resolved as of 2026-07-27**: target audience, the
+underlying honest/business/long-term goal, user problem, and value
+proposition are all now confirmed (Rehan's direct answers — see
+[docs/18](docs/18-product-definition.md) §4/§5/§7/§8 and
+[PRODUCT_BLUEPRINT.md](PRODUCT_BLUEPRINT.md)). Vision statement refined
+accordingly ([docs/00](docs/00-project-vision.md)). **What's left before
+Sprint 3:** story architecture, brand direction, typography — see Open
+decisions below. The project is committed to git and pushed to GitHub —
+public repo at
+[github.com/moinul-rehan/blank-to-bold](https://github.com/moinul-rehan/blank-to-bold).
 Build/lint/typecheck/dev server all verified working as of 2026-07-27.
 
 ## Decisions made
 
 - **2026-07-27 — Working relationship changed.** ChatGPT is no longer part
   of this project. Rehan now works with Claude Code alone, which covers
-  both Product Architect/UX Strategist/Experience Director *and* Lead
+  both Product Architect/UX Strategist/Experience Director _and_ Lead
   Frontend Engineer/Technical Architect — see [CLAUDE.md](./CLAUDE.md)'s
   Roles section. Product decisions (audience, story, brand, etc.) now get
   made through direct conversation with Rehan and written into `docs/`,
@@ -130,34 +127,40 @@ inline` under different names to avoid a self-reference cycle. Documented
 
 ## Open decisions
 
-- **Brand and Experience docs** — earlier discussion proposed inserting
-  `docs/01-brand.md` and `docs/02-experience.md` (with the rest renumbered)
-  to close the gap between Vision and Architecture, but this wasn't
-  confirmed or created — the session moved straight into the technical
-  scaffold instead. Still pending: get Brand/Experience direction from the
-  Product Architect, then create those docs and renumber.
-- **Typography** — still placeholder (Geist). No font decision yet.
+**Resolved 2026-07-27** (kept here, struck from "open," for history):
+target audience, user problem, honest/business/long-term goal, value
+proposition, vision refinement, qualitative success metric — see
+[docs/18](docs/18-product-definition.md) §4/§5/§7/§8/§10 and
+[PRODUCT_BLUEPRINT.md](PRODUCT_BLUEPRINT.md).
+
+**Still open:**
+
 - **Story architecture** — not yet defined; blocks scene map and the real
-  shape of `ExperienceProvider`.
+  shape of `ExperienceProvider`. Now has real seed material (the Honest
+  Goal — "decisions, reasoning, failures, iterations" — see docs/18 §4)
+  but hasn't been written into
+  [docs/07-story-architecture.md](./docs/07-story-architecture.md) yet.
+- **Brand direction** — color, voice, identity. No `docs/01-brand.md` was
+  ever created; still nothing beyond shadcn's neutral placeholder theme.
+- **Typography** — still placeholder (Geist). No font decision yet.
+- **User personas** — deferred by choice, not blocked (audience is known;
+  personas just need more specificity than given so far — small, scoped
+  task whenever wanted).
+- **Quantitative success metrics** — non-blocking; a qualitative bar is
+  already confirmed and sufficient.
 - **Phase 1.5 backend design needs explicit approval before implementation
   starts** — this was an explicit instruction from the user (design first,
   build only after sign-off). Nothing in Phase 1.5's "not implemented yet"
   list (see roadmap) should be started until that approval happens.
-- **Product-level gaps, surfaced by [docs/18-product-definition.md](./docs/18-product-definition.md)'s
-  Product Readiness Report — blocking before Sprint 3, in dependency
-  order:** target audience → user problem → user personas → underlying
-  product/business goal → success metrics → story architecture (also
-  listed above) → brand direction (also listed above) → typography (also
-  listed above). None of these are documented anywhere in the repo. See
-  docs/18 for the full reasoning on why each blocks the next.
 
 ## Next steps
 
 See [docs/10-roadmap.md](./docs/10-roadmap.md). Two parallel tracks are
-open: Phase 1 (Story & Scene Definition — needs Brand/Experience/Story
-direction from the Product Architect) and Phase 1.5 implementation (needs
-explicit approval of the backend architecture design in docs/13–16 before
-any Prisma/Studio code gets written).
+open: Phase 1 (Story & Scene Definition — now unblocked to start on Story
+Architecture directly with Rehan, brand/typography can proceed in
+parallel) and Phase 1.5 implementation (needs explicit approval of the
+backend architecture design in docs/13–16 before any Prisma/Studio code
+gets written).
 
 ## Session log
 
@@ -238,7 +241,7 @@ any Prisma/Studio code gets written).
   with the missing decisions listed in dependency order (audience →
   problem → personas → goal → metrics → story → brand → typography).
   Explicitly noted that the backend validation slice recommended in
-  docs/17 is *not* blocked by any of this — it's infrastructure, already
+  docs/17 is _not_ blocked by any of this — it's infrastructure, already
   designed, and was only out of scope this sprint by instruction.
 - **2026-07-27 (cont.)** — Wrote `PROJECT_UNDERSTANDING.md` and
   `PRODUCT_BLUEPRINT.md` at repo root (a broad instruction requested many
@@ -247,8 +250,27 @@ any Prisma/Studio code gets written).
   don't exist yet; writing them now would mean inventing content, which
   was explicitly disallowed, so only the two docs answerable from verified
   information were created). Then: installed GitHub CLI (`winget install
-  GitHub.cli`), authenticated via device flow, created the initial git
+GitHub.cli`), authenticated via device flow, created the initial git
   commit (everything from Phase 0 through this point — first commit ever
   in this repo), created a **public** GitHub repo
   ([github.com/moinul-rehan/blank-to-bold](https://github.com/moinul-rehan/blank-to-bold)),
   and pushed `main`. Resolves the top risk from docs/17.
+- **2026-07-27 (cont.)** — Rehan answered the two blocking product
+  questions directly: target audience (Primary 80% hiring
+  managers/design leads/directors; Secondary 15% founders/startups/
+  freelance clients; Tertiary 5% design community) and the underlying
+  goal (Honest: help people understand how he thinks, not just what he
+  designed; Professional: minutes of attention over seconds of scanning;
+  Career: UI designer → Product Designer; Long-term: portfolio as first
+  chapter of an ongoing personal-brand platform). Also proposed and
+  justified a refined vision statement ("interactive product experience
+  that transforms a portfolio... into a memorable journey through a
+  designer's way of thinking") with a guiding one-sentence test for every
+  future decision. Updated `docs/00-project-vision.md` (refined vision),
+  `docs/18-product-definition.md` (§1, §4, §5, §7, §8, §10, §15, §16, and
+  the Product Readiness Report — dependency list dropped from 8 items to
+  2: story architecture and brand/typography), `PRODUCT_BLUEPRINT.md`
+  (Honest/Business/Long-term Goal moved Pending → Confirmed),
+  `PROJECT_UNDERSTANDING.md`, and `CLAUDE.md`'s opening line, all to keep
+  them consistent with the new confirmed decisions — nothing invented,
+  everything traceable to Rehan's direct answers.

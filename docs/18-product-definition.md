@@ -1,24 +1,30 @@
 # 18 — Product Definition (Sprint 2)
 
-> **Method note:** every section below is synthesized strictly from what's
+> **Method note:** every section below is sourced either from what was
 > already documented in this repository (docs/00–17, `CLAUDE.md`,
-> `CONTEXT.md`) — nothing here is invented. Where a decision genuinely
-> hasn't been made anywhere in the repo, that's stated explicitly as a
-> **placeholder**, with a note on where the answer needs to come from
-> (almost always: the Product Architect). See the
-> [Product Readiness Report](#product-readiness-report) at the end for what
-> those gaps mean for Sprint 3.
+> `CONTEXT.md`) or from Rehan's direct answers in conversation (marked
+> "confirmed 2026-07-27") — nothing here is invented. Where a decision
+> genuinely hasn't been made by either source, that's stated explicitly as
+> a **placeholder**. See the
+> [Product Readiness Report](#product-readiness-report) at the end for
+> what's resolved and what's still open.
 
 ## 1. Product Vision
 
-> Source: [00-project-vision.md](./00-project-vision.md)
+> Source: [00-project-vision.md](./00-project-vision.md), refined
+> 2026-07-27.
 
-**Blank to Bold** is not a typical portfolio. It's an award-level
-interactive digital experience that presents Rehan's journey as a Product
-Designer through interaction, motion, exploration, and thoughtful
-storytelling. It is treated as a digital product, not a personal website.
+**Blank to Bold is an interactive product experience that transforms a
+portfolio from a collection of projects into a memorable journey through a
+designer's way of thinking.**
 
-The feeling being built toward:
+The guiding sentence for every future decision:
+
+> Blank to Bold exists to help people experience how I think as a product
+> designer — not just view the work I've created.
+
+Treated as a digital product, not a personal website. The feeling being
+built toward:
 
 - Visitors should not feel like they are browsing a portfolio.
 - Visitors should feel like they are exploring an interactive story.
@@ -75,9 +81,10 @@ once built, is meant to be the single place content is read from — see
 ## 4. Product Goals
 
 > Source: [00-project-vision.md](./00-project-vision.md) "Guiding
-> constraint" + [10-roadmap.md](./10-roadmap.md).
+> constraint" + [10-roadmap.md](./10-roadmap.md) + Rehan's answers,
+> 2026-07-27.
 
-Documented goals:
+**Engineering/process goals (confirmed earlier):**
 
 - Engineer the project "with the same care as a high-quality SaaS product,"
   expected to evolve over time — not a one-off static site.
@@ -86,63 +93,92 @@ Documented goals:
 - Ship a public Experience that never hardcodes content, backed by a Studio
   that lets the creator manage everything without touching code.
 
-**Placeholder — not documented anywhere in the repo:** the underlying
-_business_ or _career_ goal this product serves (e.g. attracting job
-opportunities, freelance clients, speaking engagements, or simply a
-personal creative record) has never been stated. Every technical decision
-so far has been made without knowing this, because it hasn't blocked
-infrastructure work — but it will shape almost every choice in Sprint 3
-(what "success" looks like, what the homepage should optimize for, what a
-visitor should do after arriving). **Needs Product Architect input.**
+**Honest goal (confirmed 2026-07-27):** not to impress people with
+animations — to help people understand _how Rehan thinks_, not just what
+he designed. A static portfolio only shows the final result; Blank to Bold
+is meant to show the decisions, the reasoning, the failures, the
+iterations, and the product thinking behind every project.
 
-## 5. Target Audience
+**Professional goal:** get hiring managers to spend _minutes_ exploring
+the work instead of _seconds_ scanning it. Success is someone remembering
+Rehan's way of thinking after closing the browser.
 
-> **Placeholder — not documented anywhere in the repo.**
+**Career goal:** shift perception from "a UI designer" to "a Product
+Designer who understands systems, user experience, engineering, and
+storytelling."
 
-No document defines who visits Blank to Bold Experience or why. Candidate
-audiences implied loosely by the "Product Designer portfolio" framing
-(hiring managers, design leads, recruiters, peers, potential clients) are
-not confirmed anywhere — naming them here would be inventing information,
-which this document is explicitly not allowed to do. **Needs Product
-Architect input before Sprint 3** — this gap blocks §6 and §7 directly, and
-indirectly shapes §9–§11.
+**Long-term goal:** Blank to Bold is not just a portfolio — it's the
+foundation of a personal brand. Over time it's meant to grow into a
+platform publishing case studies, design thinking, product experiments,
+articles, talks, open-source design resources, and personal journey
+content. The portfolio is the first chapter, not the final product. (This
+directly validates the Blog/Playground/Career-Timeline modules already
+designed in [16-studio-modules.md](./16-studio-modules.md) — the backend
+was built to accommodate exactly this kind of growth without needing
+architectural changes.)
+
+## 5. Target Audience — Confirmed (2026-07-27)
+
+**Primary (80%): Hiring Managers, Product Design Leads, and Design
+Directors at product companies.** The people who make or strongly
+influence hiring decisions. They don't just want attractive screens — they
+want to understand how Rehan thinks, solves problems, communicates, and
+builds products. What they need to be able to tell, without reading a
+traditional résumé: can this designer think like a product designer?
+Handle complex systems? Understand UX beyond visuals? Collaborate with
+engineers? Own features from concept to execution?
+
+**Secondary (15%): Founders, startups, and potential freelance clients.**
+Care less about a perfect design process, more about whether Rehan can
+understand a business problem and deliver a product users actually enjoy.
+Should leave the site thinking "this is someone I'd trust to design our
+product."
+
+**Tertiary (5%): Other designers, students, and the design community.**
+Not the main target, but if they enjoy the experience they naturally share
+it — increasing visibility and strengthening the personal brand (see the
+Long-term Goal in §4).
 
 ## 6. User Personas
 
-> **Placeholder — not documented anywhere in the repo.**
+> **Still pending — deliberately not drafted here.**
 
-No personas exist in any doc. This is downstream of §5 (Target Audience)
-being undefined — personas can't be responsibly drafted without first
-knowing who the audience actually is. **Needs Product Architect input.**
+§5 unblocks this (audience is now known), but concrete personas need more
+specificity than a percentage breakdown provides — company type/size,
+seniority, a name, a scenario. Drafting them now would mean inventing
+those specifics. This is now a small, well-scoped task rather than a
+blocked one — worth doing as its own step (a dedicated `USER_PERSONAS.md`)
+once wanted, not squeezed in here.
 
-## 7. User Problems
+## 7. User Problems — Confirmed (synthesized from §4, 2026-07-27)
 
-> **Placeholder — not documented anywhere in the repo.**
+Not stated as a standalone "user problem" statement anywhere, but directly
+inferable from Rehan's own stated reasoning without adding anything new:
+**hiring managers and design leads can't tell how a candidate actually
+thinks from a typical portfolio.** A static project gallery shows the
+final screens, not the decisions, reasoning, failures, or iteration behind
+them — so evaluators are left scanning visuals in seconds rather than
+understanding the thinking in minutes, which is precisely the gap the
+Honest Goal (§4) exists to close.
 
-No document states what problem a visitor has that this experience solves
-(e.g. "recruiters can't tell if a candidate can actually think through a
-design problem, only look at pretty screens"). The Design Principles
-(§3) describe _how_ the experience should feel, but not _why_ a visitor
-needs it. **Needs Product Architect input** — likely resolved together with
-§5–§6 as one piece of work (audience → their problem → persona), not three
-separate exercises.
+Caveat: this is the creator's own framing of the problem, not something
+validated with the actual audience (interviews, feedback, etc.) — worth
+being aware it's a reasonable hypothesis, not confirmed research.
 
-## 8. Value Proposition
+## 8. Value Proposition — Confirmed (2026-07-27)
 
-> Partially documented; partially placeholder.
+For hiring managers/design leads (§5) who can't tell how a candidate
+thinks from a typical portfolio (§7): Blank to Bold shows the decisions,
+reasoning, failures, and iteration behind the work, not just the final
+screens — through an interactive journey rather than a static gallery.
+Instead of scanning a portfolio for seconds, they spend minutes actually
+understanding Rehan's product thinking, and remember it after they leave.
 
-**What's documented:** the differentiation is explicit —
-[01-design-principles.md](./01-design-principles.md) principle 9 ("Never
-copy another portfolio") and the Vision's framing ("not browsing a
-portfolio," "exploring an interactive story") establish _how_ this product
-is meant to differ from a typical designer portfolio: original, story-driven
-systems instead of a template with a project grid.
-
-**Placeholder:** _why that differentiation matters to the visitor_ — the
-actual value exchanged — isn't stated, because it depends on §5–§7 being
-answered first. A value proposition needs an audience and a problem to be
-a proposition _to_; right now this section can only describe the product's
-stylistic differentiation, not its value.
+This combines what was already documented (the stylistic differentiation —
+[01-design-principles.md](./01-design-principles.md) principle 9, "never
+copy another portfolio," original story-driven systems) with what's now
+confirmed (§4, §5, §7) to complete the _why it matters to the visitor_
+half that was previously missing.
 
 ## 9. Product Pillars
 
@@ -166,18 +202,19 @@ stylistic differentiation, not its value.
 
 ## 10. Success Metrics
 
-> Mostly a placeholder — only one metric is documented anywhere.
+**Qualitative metric (confirmed 2026-07-27):** "if someone remembers my
+way of thinking after closing the browser, the portfolio has succeeded"
+(§4, Professional goal). Deliberately not a number — the stated bar is
+memorability of thinking, not a conversion event.
 
-**Documented:** "Target an excellent Lighthouse score" —
-[01-design-principles.md](./01-design-principles.md#performance-budget).
-This is a technical/quality metric, not a product-outcome metric.
+**Technical metric (confirmed earlier):** "Target an excellent Lighthouse
+score" — [01-design-principles.md](./01-design-principles.md#performance-budget).
 
-**Placeholder — not documented anywhere:** no product or business success
-metric exists (e.g. visit-to-contact conversion, time spent per case study,
-number of case studies published, recruiter/client inquiries generated,
-returning visitors). This is a direct consequence of §4's business-goal gap
-— metrics can't be defined before the goal they'd measure is defined.
-**Needs Product Architect input.**
+**Still pending:** a quantitative product metric (time-on-page for case
+studies, inquiries generated, return visits, etc.) hasn't been set. Not
+blocking — the qualitative bar above is a real, usable success definition
+on its own — but worth deciding before Sprint 3 if measurement/analytics
+work is wanted later.
 
 ## 11. Functional Scope
 
@@ -272,39 +309,38 @@ identity/SEO, all read through a typed service layer, never hardcoded.
 
 ## 15. Open Product Questions
 
-> Source: [CONTEXT.md](../CONTEXT.md) "Open decisions" (verbatim, plus this
-> sprint's additions below it).
+> Updated 2026-07-27 — most of this section is now resolved; see §4/§5/§7/§8.
 
-Carried over from CONTEXT.md, still unresolved:
+**Still open:**
 
-- **Brand direction** — a `docs/01-brand.md` was proposed early on and
-  never created; no color palette, voice, or brand identity exists beyond
-  shadcn's neutral placeholder theme.
-- **Experience direction** — a `docs/02-experience.md` was proposed
-  alongside Brand and also never created.
-- **Typography** — still placeholder (Geist), no font decision made.
 - **Story architecture** — the narrative arc, chapters/acts, and
   emotional/tonal shifts of the experience are undefined
   ([07-story-architecture.md](./07-story-architecture.md)); this blocks the
   scene map ([08-scene-map.md](./08-scene-map.md)) and the real shape of
-  `ExperienceProvider`.
+  `ExperienceProvider`. Now has real seed material from §4's Honest Goal.
+- **Brand direction** — no color palette, voice, or brand identity exists
+  beyond shadcn's neutral placeholder theme.
+- **Typography** — still placeholder (Geist), no font decision made.
+- **User personas** (§6) — deferred by choice, not blocked; small task
+  whenever wanted.
+- **Quantitative success metrics** (§10) — non-blocking; a qualitative bar
+  is already confirmed.
+- Timeline/deadline/external stakeholder, if any (§14) — still unstated.
 
-New, surfaced by this document:
-
-- Target audience (§5), personas (§6), user problems (§7) — undefined.
-- The underlying business/career goal this product serves (§4) — undefined.
-- Product-level success metrics (§10) — undefined.
-- Timeline/deadline/external stakeholder, if any (§14) — undefined.
+**Resolved 2026-07-27:** target audience, user problem(s), the underlying
+honest/professional/career/long-term goal, value proposition. See §4, §5,
+§7, §8.
 
 ## 16. Risks
 
 > Synthesized from the open questions above — these are logical
 > consequences of documented gaps, not new claims about the product.
 
-- **Building the wrong experience.** Without a defined audience (§5) or
-  user problem (§7), Sprint 3 architecture/scene work risks optimizing for
-  "impressive to build" rather than "effective for whoever actually visits
-  this."
+- **Building the wrong experience — reduced, not eliminated.** Audience
+  (§5) and user problem (§7) are now defined, which removes most of this
+  risk. What remains: the problem statement (§7) is the creator's own
+  framing, not something validated with the actual audience — worth
+  revisiting if real feedback ever contradicts it.
 - **Content never gets populated.** The entire Functional Scope (§11) is
   designed around a single-operator Studio; if that operator doesn't
   actually use it to publish real content, the Experience has nothing to
@@ -349,49 +385,57 @@ New, surfaced by this document:
 
 ## Product Readiness Report
 
+> **Updated 2026-07-27** after Rehan answered the two blocking questions
+> (target audience, underlying goal) directly. Original verdict (No) is
+> preserved below with a strikethrough-equivalent note, not deleted —
+> the reasoning still matters for what's still genuinely open.
+
 ### Do we know enough about the product to start architecture?
 
-**No.**
+**Closer, but still not fully — two items away, not eight.**
 
-The _technical_ architecture (systems, folder structure, database schema,
-API design, service-layer boundary) is thoroughly designed and reviewed —
-see [13](./13-backend-architecture.md)–[17](./17-engineering-review.md).
-That work can proceed on its own merits regardless of the gaps below (it's
-infrastructure, not experience). But **product architecture** — what the
-Experience actually needs to be, structurally, to serve real visitors —
-cannot responsibly start yet, because the questions that would shape it
-are still open.
+Target audience (§5), the underlying goal (§4), the user problem (§7), and
+a value proposition (§8) are now confirmed — that was the largest and most
+foundational gap, and it's resolved. The _technical_ architecture was
+already thoroughly designed and reviewed
+([13](./13-backend-architecture.md)–[17](./17-engineering-review.md)) and
+remains unaffected either way.
 
-Concretely: `features/` (the Experience's story-driven units) can't be
-architected without knowing the story (§15), the story can't be written
-without knowing who it's for (§5) and what problem it solves for them
-(§7), and none of the visual-layer decisions (§15: brand, typography) have
-been made either. Any architecture built now would be structurally
-plausible but built on assumptions, not decisions.
+What's still open, and still blocks `features/` (the Experience's
+story-driven units) specifically:
+
+- **Story architecture** ([07-story-architecture.md](./07-story-architecture.md)) —
+  the narrative arc. Now has real material to be built from (§4's Honest
+  Goal — "decisions, reasoning, failures, iterations" — is close to a
+  seed for this), but hasn't been written yet.
+- **Brand direction and typography** — visual identity, still undecided.
+
+Everything else that was previously listed as a dependency (personas,
+success metrics) is either resolved enough to proceed or explicitly
+non-blocking (§6, §10).
 
 ### Missing product decisions before Sprint 3
 
-In dependency order — each blocks the ones below it:
+Was 8 items in dependency order; now 2, neither blocking the other:
 
-1. **Target audience** (§5) — who is this for.
-2. **User problem** (§7) — what problem does the experience solve for
-   them.
-3. **User personas** (§6) — concrete enough to design against; depends on
-   1–2.
-4. **Underlying product/business goal** (§4) — what this project is
-   actually trying to achieve for its creator.
-5. **Success metrics** (§10) — how "working" gets measured; depends on 4.
-6. **Story architecture** (§15, [07-story-architecture.md](./07-story-architecture.md)) —
-   the narrative arc; depends on 1–3 to be meaningful rather than
-   arbitrary.
-7. **Brand direction** (§15) — visual identity; can proceed in parallel
-   with 6, doesn't strictly depend on it.
-8. **Typography** (§15) — can be decided alongside brand.
+1. **Story architecture** — the narrative arc (acts/beats/tone). Depends
+   on audience+goal, which are now known — this is now genuinely
+   buildable, not blocked.
+2. **Brand direction** (incl. typography) — visual identity. Independent
+   of story; can happen in parallel.
 
-**What can proceed in the meantime, without waiting on the above:** the
-backend implementation validated in [17-engineering-review.md](./17-engineering-review.md)'s
-recommendation (one real service + one real Route Handler, Prisma
-installed, first migration run) — that work is infrastructure, is already
-fully designed, and doesn't depend on any open product question. It was
-explicitly out of scope for this sprint by instruction, not because it's
-blocked.
+**Resolved this round:** target audience, user problem, underlying
+goal (honest/professional/career/long-term), value proposition, and a
+qualitative success metric.
+
+**Still explicitly non-blocking, deferred by choice not dependency:** user
+personas (§6) — small, well-scoped, can be drafted whenever wanted, not a
+prerequisite for the two items above. Quantitative success metrics (§10) —
+the qualitative bar is a real, sufficient success definition on its own.
+
+**What can proceed regardless, unchanged from before:** the backend
+implementation validated in
+[17-engineering-review.md](./17-engineering-review.md)'s recommendation
+(one real service + one real Route Handler, Prisma installed, first
+migration run) — infrastructure, already fully designed, never depended on
+any product question.

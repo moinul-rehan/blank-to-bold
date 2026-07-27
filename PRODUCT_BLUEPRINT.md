@@ -1,25 +1,36 @@
 # Product Blueprint
 
-Every section is labeled **Confirmed** (sourced from an existing document,
-cited) or **Pending** (genuinely undecided anywhere in the repo). Nothing
-below is invented — where a section would otherwise require guessing, it
-says so and stops.
+Every section is labeled **Confirmed** (sourced from an existing document
+or from Rehan's direct answers in conversation, cited) or **Pending**
+(genuinely undecided). Nothing below is invented — where a section would
+otherwise require guessing, it says so and stops.
 
-## Vision — Confirmed
+> Updated 2026-07-27: Vision, Honest/Business/Long-term Goal, Target
+> Audience, and a qualitative Success Metric moved from Pending to
+> Confirmed, based on Rehan's direct answers. See
+> [docs/18-product-definition.md](docs/18-product-definition.md) for the
+> full reasoning behind each.
 
-Source: [docs/00-project-vision.md](docs/00-project-vision.md)
+## Vision — Confirmed (refined 2026-07-27)
 
-> Blank to Bold is not a typical portfolio. It's an award-level interactive
-> digital experience that presents Rehan's journey as a Product Designer
-> through interaction, motion, exploration, and thoughtful storytelling.
-> Treat it as a digital product, not a personal website.
+Source: [docs/00-project-vision.md](docs/00-project-vision.md).
+
+> Blank to Bold is an interactive product experience that transforms a
+> portfolio from a collection of projects into a memorable journey through
+> a designer's way of thinking.
+
+Guiding sentence for every future decision:
+
+> Blank to Bold exists to help people experience how I think as a product
+> designer — not just view the work I've created.
+
+If a feature doesn't help someone understand the thinking behind the work,
+or contribute to a memorable journey, it probably doesn't belong.
 
 ## Mission — Confirmed (synthesized)
 
 Source: combination of [docs/00](docs/00-project-vision.md) and
-[docs/13-backend-architecture.md](docs/13-backend-architecture.md) — no
-document states a "mission" verbatim; this is a direct combination of two
-already-documented facts, not a new claim.
+[docs/13-backend-architecture.md](docs/13-backend-architecture.md).
 
 Two connected products: **Blank to Bold Experience** (public, renders
 content, never hardcodes it) and **Blank to Bold Studio** (private, where
@@ -58,10 +69,13 @@ unabridged, in order:
 9. Never copy another portfolio.
 10. Build original systems.
 
-## Product Goals — Confirmed (technical/process goals only)
+## Product Goals — Confirmed
 
-Source: [docs/00-project-vision.md](docs/00-project-vision.md) "Guiding
-constraint," [docs/10-roadmap.md](docs/10-roadmap.md).
+Source: [docs/00-project-vision.md](docs/00-project-vision.md), Rehan's
+answers 2026-07-27 (full detail in
+[docs/18-product-definition.md](docs/18-product-definition.md) §4).
+
+**Engineering/process goals:**
 
 - Engineered "with the same care as a high-quality SaaS product," expected
   to evolve over time.
@@ -70,43 +84,52 @@ constraint," [docs/10-roadmap.md](docs/10-roadmap.md).
 - Ship an Experience that never hardcodes content, backed by a Studio the
   creator can fully operate without touching code.
 
-These are process/engineering goals. Outcome-level product goals depend on
-the Honest Goal below, which is pending.
+**Outcome goals:** see Honest Goal, Business Goal, and Long-term Goal
+below.
 
-## Honest Goal — Pending
+## Honest Goal — Confirmed (2026-07-27)
 
-**Not documented anywhere in the repo.** This is the real, unvarnished
-reason the project exists for its creator — separate from the polished
-Vision statement above. No file states it. Naming a guess here (career
-change, job search, portfolio replacement, personal pride) would be
-inventing information, which this document is not permitted to do.
-**Needs direct input from Rehan.**
+Not to impress people with animations — to help people understand _how
+Rehan thinks_, not just what he designed. A static portfolio only shows
+the final result; Blank to Bold is meant to show the decisions, the
+reasoning, the failures, the iterations, and the product thinking behind
+every project.
 
-## Business Goal — Pending
+## Business Goal — Confirmed (2026-07-27)
 
-**Not documented anywhere in the repo.** Whether this project is meant to
-generate income, leads, employment, or has no commercial goal at all is
-unstated. See [docs/18-product-definition.md](docs/18-product-definition.md)
-§4, which identifies this exact gap. **Needs direct input from Rehan.**
+Two layers:
 
-## Long-term Goal — Pending
+- **Professional:** get hiring managers to spend _minutes_ exploring the
+  work instead of _seconds_ scanning it — success is someone remembering
+  Rehan's way of thinking after closing the browser.
+- **Career:** shift perception from "a UI designer" to "a Product Designer
+  who understands systems, user experience, engineering, and
+  storytelling."
 
-**Not documented anywhere in the repo.** No document describes what Blank
-to Bold is meant to become beyond the current build (e.g. an ongoing
-content platform updated for years, a one-time launch piece, a template
-for future projects). **Needs direct input from Rehan.**
+## Long-term Goal — Confirmed (2026-07-27)
 
-## Success Metrics — Partially Confirmed / Mostly Pending
+Blank to Bold is not just a portfolio — it's the foundation of a personal
+brand. Over time it's meant to grow into a platform publishing case
+studies, design thinking, product experiments, articles, talks,
+open-source design resources, and personal journey content. The portfolio
+is the first chapter, not the final product. (Already validated by the
+Blog/Playground/Career-Timeline modules designed in
+[docs/16-studio-modules.md](docs/16-studio-modules.md) — no architecture
+change needed to support this.)
 
-**Confirmed:** "Target an excellent Lighthouse score" —
+## Success Metrics — Partially Confirmed
+
+**Qualitative (confirmed 2026-07-27):** if someone remembers Rehan's way
+of thinking after closing the browser, the portfolio has succeeded.
+Deliberately not a number.
+
+**Technical (confirmed earlier):** "Target an excellent Lighthouse score" —
 [docs/01-design-principles.md](docs/01-design-principles.md#performance-budget).
-A technical/quality metric, not a product-outcome metric.
 
-**Pending:** no product or business success metric exists anywhere
-(conversion, engagement, inquiries generated, published content volume,
-etc.) — a direct consequence of the Business/Honest/Long-term Goals above
-being unset. **Needs direct input from Rehan**, after the goals are
-defined.
+**Pending:** a quantitative product metric (time-on-page, inquiries
+generated, return visits, etc.) — not blocking, since the qualitative bar
+above is a real and sufficient success definition on its own, but worth
+deciding if analytics/measurement work is ever wanted.
 
 ## Constraints — Confirmed
 
@@ -128,24 +151,36 @@ Source: cross-referenced from docs/00, 01, 13, and
 (employer, client) has a delivery date — nothing in the repo states any
 date-driven constraint.
 
-## Open Questions — Confirmed list (all currently unresolved)
+## Open Questions
 
-Source: [CONTEXT.md](CONTEXT.md) "Open decisions" +
-[docs/18-product-definition.md](docs/18-product-definition.md) §15, merged.
+Source: [docs/18-product-definition.md](docs/18-product-definition.md)
+§15, updated 2026-07-27.
 
-- Target audience
-- User problem(s) being solved
-- User personas
-- Honest / business / long-term goal
-- Success metrics
-- Story architecture (narrative arc, chapters/acts, tone)
-- Brand direction (color, voice, identity)
-- Typography
+**Still open:**
+
+- Story architecture (narrative arc, chapters/acts, tone) — now has real
+  seed material from the Honest Goal above, but not yet written.
+- Brand direction (color, voice, identity) and typography.
+- User personas — deferred by choice (small, well-scoped, not blocking).
+- Quantitative success metrics — non-blocking.
+- Timeline/budget/external stakeholder constraints, if any.
+
+**Resolved 2026-07-27:** target audience, user problem(s), honest/business/
+long-term goal, value proposition, qualitative success metric.
 
 ---
 
 ## Confirmed Decisions (summary)
 
+- **Vision, refined:** "an interactive product experience that transforms
+  a portfolio... into a memorable journey through a designer's way of
+  thinking" — replaces the earlier, more generic "interactive portfolio"
+  framing.
+- **Target audience:** Primary (80%) hiring managers/design
+  leads/directors; Secondary (15%) founders/startups/freelance clients;
+  Tertiary (5%) designers/students/community. Full detail in
+  [docs/18](docs/18-product-definition.md) §5.
+- **Honest, business, and long-term goals** — see above.
 - Two-product architecture: Experience (public, read-only) + Studio
   (private, manages content) — [docs/13](docs/13-backend-architecture.md).
 - Single Next.js app, route groups, not a monorepo (with a documented
@@ -163,13 +198,11 @@ Source: [CONTEXT.md](CONTEXT.md) "Open decisions" +
 
 ## Pending Decisions (summary)
 
-- Honest Goal, Business Goal, Long-term Goal
-- Success Metrics (product-level)
-- Target Audience, User Problems, User Personas
 - Story Architecture
 - Brand Direction, Typography
+- User Personas (deferred by choice)
+- Quantitative success metrics (non-blocking)
 - Timeline/budget/external stakeholder constraints, if any
 
-All of the above require direct input from Rehan — none can be responsibly
-filled in by inference from what's already written, because nothing
-written addresses them even indirectly.
+All require direct input from Rehan when wanted — none can be responsibly
+filled in by inference.

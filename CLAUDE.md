@@ -1,7 +1,10 @@
 # Blank to Bold
 
-An award-level, story-driven interactive experience presenting Rehan's
-journey as a Product Designer — a digital product, not a portfolio site.
+An interactive product experience that transforms a portfolio from a
+collection of projects into a memorable journey through a designer's way
+of thinking — a digital product, not a portfolio site. See
+[00-project-vision.md](./docs/00-project-vision.md) for the full vision
+and the guiding sentence every decision gets measured against.
 
 Two connected products: **Blank to Bold Experience** (the public site,
 renders content only) and **Blank to Bold Studio** (the private creator

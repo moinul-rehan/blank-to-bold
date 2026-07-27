@@ -2,16 +2,16 @@
 
 A synthesis of the entire repository as it stands on 2026-07-27 — every
 claim below is sourced from an existing file, not inferred or assumed.
-Written to answer one question: *does the project actually understand
-itself, end to end?*
+Written to answer one question: _does the project actually understand
+itself, end to end?_
 
 ## What Blank to Bold is
 
-Blank to Bold is not a typical portfolio — it's described in
-[docs/00-project-vision.md](docs/00-project-vision.md) as "an award-level
-interactive digital experience that presents Rehan's journey as a Product
-Designer through interaction, motion, exploration, and thoughtful
-storytelling," treated as a digital product, not a personal website.
+Per the refined vision statement ([docs/00-project-vision.md](docs/00-project-vision.md),
+2026-07-27): **an interactive product experience that transforms a
+portfolio from a collection of projects into a memorable journey through a
+designer's way of thinking** — treated as a digital product, not a
+personal website.
 
 Structurally, it's **two connected products** ([docs/13-backend-architecture.md](docs/13-backend-architecture.md)):
 
@@ -26,26 +26,34 @@ Studio, via a typed service layer — never a literal value in a component.
 
 ## Why it exists
 
-The repository documents the *feeling* the project is reaching for and the
-*mechanism* it uses to get there, but not yet the underlying motivation.
+Confirmed 2026-07-27 (Rehan's direct answer, recorded in
+[docs/18-product-definition.md](docs/18-product-definition.md) §4): not to
+impress people with animations, but to help people understand _how Rehan
+thinks_, not just what he designed — a static portfolio only shows the
+final result; Blank to Bold shows the decisions, reasoning, failures,
+iterations, and product thinking behind every project.
 
-Documented ("the feeling we're building toward," [docs/00](docs/00-project-vision.md)):
-- Visitors should feel like they're exploring an interactive story, not
-  browsing a portfolio.
-- Every section should encourage curiosity; every interaction should have
-  a purpose; every animation should support storytelling.
-- The experience should be memorable without becoming confusing.
+- **Professional goal:** hiring managers spend minutes exploring the work
+  instead of seconds scanning it; success is being remembered after the
+  browser closes.
+- **Career goal:** shift perception from "a UI designer" to "a Product
+  Designer who understands systems, UX, engineering, and storytelling."
+- **Long-term goal:** the foundation of a personal brand — the portfolio
+  is the first chapter of an ongoing platform (case studies, design
+  thinking, product experiments, articles, talks, open-source resources),
+  not the final product.
 
-**Not documented anywhere:** the actual reason this exists for its
-creator — career opportunities, freelance leads, a personal creative
-record, or something else. [docs/18-product-definition.md](docs/18-product-definition.md)
-§4 identifies this explicitly as an open gap, not a fact this document can
-report.
+Also documented ("the feeling we're building toward,"
+[docs/00](docs/00-project-vision.md)): visitors should feel like they're
+exploring an interactive story, not browsing a portfolio; every section
+should encourage curiosity; every animation should support storytelling;
+memorable without becoming confusing.
 
 ## What makes it different
 
 Documented as explicit principles, not just intent
 ([docs/01-design-principles.md](docs/01-design-principles.md)):
+
 - **Never copy another portfolio** — reference for inspiration, not
   reproduction.
 - **Build original systems** — reusable, named systems, not one-off
@@ -57,9 +65,11 @@ Documented as explicit principles, not just intent
   the creator manages all content through Studio, never by editing code
   ([docs/13](docs/13-backend-architecture.md)).
 
-What this differentiation is *for* (i.e. why it matters to whoever visits)
-is not yet documented — see [docs/18](docs/18-product-definition.md) §8
-(Value Proposition), which is explicitly marked partial for this reason.
+**What this differentiation is for, confirmed 2026-07-27:** hiring
+managers and design leads (the primary audience — see below) can't tell
+how a candidate thinks from a typical portfolio; Blank to Bold closes that
+gap through an interactive journey instead of a static gallery. Full value
+proposition in [docs/18](docs/18-product-definition.md) §8.
 
 ## Current project status
 
@@ -93,6 +103,7 @@ status document — always check it first):
 
 **Frontend** (built, real code — see
 [docs/03-folder-architecture.md](docs/03-folder-architecture.md)):
+
 - Next.js (App Router) + TypeScript (strict) + Tailwind v4, CSS-first
   (`globals.css` is the single source of truth for design tokens — see
   [Engineering Rule #001](docs/12-engineering-rules.md) and
@@ -115,10 +126,11 @@ status document — always check it first):
 **Backend** (designed only — see
 [docs/13](docs/13-backend-architecture.md)–[16](docs/16-studio-modules.md),
 zero code exists):
+
 - Single Next.js app, `(experience)`/`(studio)` route groups — not a
   monorepo, a deliberate choice with a documented extraction path if ever
   needed.
-- A service layer (`src/services/`) is designed to be the *only* code that
+- A service layer (`src/services/`) is designed to be the _only_ code that
   imports Prisma — both Studio's Route Handlers and Experience's Server
   Components would go through it.
 - PostgreSQL + Prisma schema drafted (`prisma/schema.prisma`, not
@@ -161,18 +173,21 @@ facto default by inertia.
 
 ## Missing decisions
 
-From [docs/18-product-definition.md](docs/18-product-definition.md)'s
-Product Readiness Report, in dependency order (each blocks the ones below
-it):
+Updated 2026-07-27 — most of what was previously missing is now confirmed
+(see [docs/18-product-definition.md](docs/18-product-definition.md)'s
+updated Product Readiness Report: target audience, user problem, the
+underlying goal, and value proposition are all resolved). What's still
+genuinely open:
 
-1. Target audience — who this is for.
-2. User problem — what problem it solves for them.
-3. User personas — depends on 1–2.
-4. Underlying product/business goal.
-5. Success metrics — depends on 4.
-6. Story architecture — the narrative arc; depends on 1–3.
-7. Brand direction — colors, typography, voice.
-8. Typography specifically.
+1. **Story architecture** — the narrative arc; now has real seed material
+   (the Honest Goal — "decisions, reasoning, failures, iterations" — is
+   close to a starting point) but hasn't been written yet.
+2. **Brand direction and typography** — visual identity, independent of
+   story, can proceed in parallel.
+
+**Deferred by choice, not blocked:** user personas (small, well-scoped,
+draftable whenever wanted) and quantitative success metrics (a qualitative
+bar is already confirmed and sufficient on its own).
 
 **Explicitly not blocked by any of the above:** the backend validation
 slice recommended in [docs/17](docs/17-engineering-review.md) (Prisma
@@ -197,7 +212,7 @@ instruction, not by dependency.
    populated).
 6. **[docs/07-story-architecture.md](docs/07-story-architecture.md)** →
    **[08-scene-map.md](docs/08-scene-map.md)** — both currently
-   placeholders; read to understand *what's missing*, not what's decided.
+   placeholders; read to understand _what's missing_, not what's decided.
 7. **[docs/09-component-system.md](docs/09-component-system.md)** — the
    handful of components that exist so far.
 8. **[docs/10-roadmap.md](docs/10-roadmap.md)** — phase-by-phase plan;
@@ -213,6 +228,6 @@ instruction, not by dependency.
     the honest self-assessment: strengths, weaknesses, technical debt,
     risks.
 12. **[docs/18-product-definition.md](docs/18-product-definition.md)** —
-    what's actually known about the *product*, and what still isn't.
+    what's actually known about the _product_, and what still isn't.
 13. **This document and `PRODUCT_BLUEPRINT.md`** — a synthesized entry
     point once 1–12 have been read once; not a replacement for them.
