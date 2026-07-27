@@ -363,3 +363,33 @@ GitHub.cli`), authenticated via device flow, created the initial git
   load, which isn't built; the lifecycle events already fire so this is a
   known, flagged limitation, not an oversight. No scene content created,
   per instruction. Verified lint/typecheck/build clean.
+- **2026-07-27 (cont.)** — Built the Global Layout: nine isolated, stacked
+  layers (`src/experience/layout/` — Background, Content, Transition,
+  Navigation, Effect, Cursor, Sound, Debug, plus `global-layout.tsx`
+  composing them; Overlay reused directly from the existing
+  `@/experience/overlay-layer.tsx` rather than duplicated). Verified
+  "isolated" is literally true, not just asserted: grepped every
+  primitive layer file and confirmed each imports nothing but `ReactNode`
+  from `react` — no system, provider, or store. Added four z-index tokens
+  (`--z-content`, `--z-transition`, `--z-effect`, `--z-debug`); moved
+  `DebugMode` off `--z-toast` (it was borrowing an unrelated token) onto
+  the new `--z-debug`. Fixed a real bug this introduced: `DebugMode` had
+  its own `fixed inset-0`, which would have double-stacked once nested
+  inside the new `DebugLayer` — changed it to `absolute`, positioned
+  within whatever container renders it. Updated `experience-shell.tsx` to
+  compose through `GlobalLayout` instead of its own ad hoc Overlay/Debug
+  usage — `SceneTransitionManager` now renders inside the generic
+  `TransitionLayer`, `DebugMode` inside the generic `DebugLayer`, neither
+  aware the other exists. **Flagged, not silently resolved:** this creates
+  two open naming/architecture questions — (1) `src/experience/layout/`
+  (new, fixed/stacked layers) vs. `src/components/layout/` (Phase 0's
+  traditional document-flow `AppShell`/`Navbar`/`Main`/`Footer`) — do they
+  coexist or does one retire the other; (2) the new `NavigationLayer`
+  (fixed overlay strip) vs. the old `Navbar` (document-flow header the
+  Door's height calc already depends on) — not interchangeable as-is.
+  Nothing removed or silently chosen between. Still not wired into
+  `page.tsx`. Verified lint/typecheck/build clean; confirmed in the live
+  dev server that the Door (the only thing currently on `/`) still
+  renders correctly and unaffected. **Per explicit instruction this
+  turn: did not commit or push — user will handle git themselves from
+  here.**

@@ -37,13 +37,24 @@
   --opacity-muted: 0.7;
   --opacity-overlay: 0.6;
 
-  /* Stacking order — the single place UI layers get their z-index from. */
+  /*
+   * Stacking order — the single place UI layers get their z-index from.
+   * The Global Layout's nine layers (docs/03) map directly to a subset of
+   * these: base=Background, content=Content, transition=Transition,
+   * navbar=Navigation, overlay=Overlay, effect=Effect, cursor=Cursor,
+   * debug=Debug. Sound has no visual footprint and modal/toast are
+   * reserved for content rendered inside a layer, not layers themselves.
+   */
   --z-base: 0;
+  --z-content: 10;
+  --z-transition: 30;
   --z-navbar: 40;
   --z-overlay: 50;
+  --z-effect: 55;
   --z-modal: 60;
   --z-cursor: 70;
   --z-toast: 80;
+  --z-debug: 90;
 }
 
 @theme inline {

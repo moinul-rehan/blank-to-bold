@@ -3,7 +3,7 @@
 import { ExperienceProvider } from "@/providers/experience-provider";
 import { SceneManager } from "@/experience/scene-manager";
 import { SceneTransitionManager } from "@/experience/scene-transition-manager";
-import { OverlayLayer } from "@/experience/overlay-layer";
+import { GlobalLayout } from "@/experience/layout/global-layout";
 import { DebugMode } from "@/experience/debug-mode";
 import type {
   SceneDefinition,
@@ -18,8 +18,13 @@ export type ExperienceShellProps = {
 
 /**
  * The root of the interactive experience. Owns scene orchestration,
- * transitions, progress, and a slot for cross-scene overlay UI — nothing
- * about any specific scene is known or hardcoded here.
+ * transitions, progress, and composes the Global Layout's nine layers —
+ * nothing about any specific scene is known or hardcoded here.
+ *
+ * `SceneTransitionManager` (the Scene System's actual transition logic)
+ * renders inside `GlobalLayout`'s generic `TransitionLayer` — the two
+ * stay isolated: `TransitionLayer` owns positioning/z-index,
+ * `SceneTransitionManager` owns what happens during a scene change.
  */
 export function ExperienceShell({
   scenes,
@@ -27,11 +32,11 @@ export function ExperienceShell({
 }: ExperienceShellProps) {
   return (
     <ExperienceProvider scenes={scenes} initialSceneId={initialSceneId}>
-      <SceneTransitionManager>
-        <SceneManager />
-      </SceneTransitionManager>
-      <OverlayLayer />
-      <DebugMode />
+      <GlobalLayout debug={<DebugMode />}>
+        <SceneTransitionManager>
+          <SceneManager />
+        </SceneTransitionManager>
+      </GlobalLayout>
     </ExperienceProvider>
   );
 }

@@ -2,7 +2,13 @@
 
 import { useExperience } from "@/providers/experience-context";
 
-/** Development-only HUD showing live Experience Shell state. Renders nothing in production. */
+/**
+ * Development-only HUD showing live Experience Shell state. Renders
+ * nothing in production. Expects to be rendered inside a positioned
+ * container (the Global Layout's `DebugLayer` — `@/experience/layout/debug-layer`)
+ * which owns the fixed placement/z-index; this only positions itself
+ * within that container.
+ */
 export function DebugMode() {
   const {
     activeScene,
@@ -16,7 +22,7 @@ export function DebugMode() {
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-[var(--z-toast)] rounded-md bg-black/80 p-3 font-mono text-xs text-white">
+    <div className="pointer-events-auto absolute bottom-4 left-4 rounded-md bg-black/80 p-3 font-mono text-xs text-white">
       <div>scene: {activeSceneId ?? "none"}</div>
       <div>title: {activeScene?.title ?? "—"}</div>
       <div>previous: {previousSceneId ?? "none"}</div>

@@ -201,6 +201,60 @@ implements what `preload` means: once the active scene reaches `active`,
 if the _next_ scene's `loadingStrategy` is `preload`, fetch it ahead of
 activation.
 
+## The Global Layout
+
+`src/experience/layout/` — nine isolated, stacked layers
+(`GlobalLayout`, `src/experience/layout/global-layout.tsx`) forming the
+site's fundamental visual architecture. **Genuinely isolated, not just in
+name:** every primitive layer file imports nothing but `ReactNode` from
+`react` — no system, no provider, no store. Each works standalone; nothing
+requires the others to function.
+
+| Layer      | File                                         | Position                            | Notes                                                                                                                                            |
+| ---------- | -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Background | `background-layer.tsx`                       | `fixed inset-0`, `z-base`           | Empty slot for a future ambient background.                                                                                                      |
+| Content    | `content-layer.tsx`                          | `relative`, `z-content`             | The **only** layer in normal document flow — contributes to page height, scrolls normally.                                                       |
+| Transition | `transition-layer.tsx`                       | `relative`, `z-transition`          | Wraps Content. Content-agnostic on purpose — the Scene System's `SceneTransitionManager` renders inside it and owns the actual transition logic. |
+| Navigation | `navigation-layer.tsx`                       | `fixed inset-x-0 top-0`, `z-navbar` | Structural placement only (top strip), no nav content.                                                                                           |
+| Overlay    | _(reused: `@/experience/overlay-layer.tsx`)_ | `fixed inset-0`, `z-overlay`        | Already existed from the Scene System build — genuinely generic already, reused rather than duplicated.                                          |
+| Effect     | `effect-layer.tsx`                           | `fixed inset-0`, `z-effect`         | Empty slot for future decorative effects (grain, particles, etc.).                                                                               |
+| Cursor     | `cursor-layer.tsx`                           | `fixed inset-0`, `z-cursor`         | `pointer-events-none` — never blocks clicks on real content beneath it.                                                                          |
+| Sound      | `sound-layer.tsx`                            | none                                | The one layer with no viewport footprint — sound has no visual position, so none is imposed. Renders `null` if empty.                            |
+| Debug      | `debug-layer.tsx`                            | `fixed inset-0`, `z-debug`          | Reserved for dev-only tooling; the Scene System's `DebugMode` renders inside it.                                                                 |
+
+**Responsive by construction, not by extra effort:** every fixed layer
+uses `inset-0`, which stretches to the viewport at any size with no
+hardcoded dimensions; Content is the one layer that isn't fixed, so it
+grows and scrolls the way normal page content does.
+
+**Composition pattern, demonstrated in `experience-shell.tsx`:** generic
+layer (position/z-index only) wraps real system logic (behavior/content) —
+`TransitionLayer` wraps `SceneTransitionManager`, `DebugLayer` wraps
+`DebugMode`. Neither generic layer needs to know the Scene System exists;
+neither Scene System component needs to know which layer it's rendered
+inside. This is the same "engine doesn't know about content" discipline
+applied to layout instead of data.
+
+**Open naming questions, flagged rather than silently resolved:**
+
+- **`src/experience/layout/` vs. `src/components/layout/`** — Phase 0
+  already built a traditional `AppShell`/`Navbar`/`Main`/`Footer` (normal
+  document-flow header/main/footer). This Global Layout is a different
+  paradigm (fixed, stacked, full-viewport layers) built for an immersive
+  experience, not a traditional site. Whether these coexist for different
+  purposes, or the old one gets retired in favor of this one, is
+  undecided — nothing has been removed.
+- **`NavigationLayer` vs. `Navbar`** — same tension, one level down: the
+  old `Navbar` assumes a document-flow header that pushes content down
+  (the Door's height calc already accounts for it); the new
+  `NavigationLayer` assumes a fixed overlay strip. They're not
+  interchangeable as-is.
+- **z-index tokens added this round:** `--z-content`, `--z-transition`,
+  `--z-effect`, `--z-debug` (see [11-design-tokens.md](./11-design-tokens.md)).
+  `DebugMode` moved off `--z-toast` onto the new `--z-debug` — it was
+  borrowing a "toast notification" token for an unrelated purpose, and now
+  has its own correctly-named one.
+
 ## Backend layers (planned — not yet created)
 
 - **`services/`** — one file per domain (`project.service.ts`,
