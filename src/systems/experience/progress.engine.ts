@@ -1,4 +1,4 @@
-import type { SceneId } from "@/systems/experience/experience.types";
+import type { SceneId } from "@/systems/experience/scene.types";
 
 /** Progress through the experience as a 0–1 fraction, by scene position. */
 export function calculateProgress(

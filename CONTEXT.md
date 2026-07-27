@@ -328,3 +328,38 @@ GitHub.cli`), authenticated via device flow, created the initial git
   — flagged in docs/17). **Open decision for next turn:** how the Door
   relates to the Shell — does it become the first registered scene, or
   stay separate?
+- **2026-07-27 (cont.)** — Built the Scene System on top of the Shell: a
+  real `SceneDefinition` type (id/title/order/route/transition/loading
+  strategy/enter+exit animation/background/interaction profile — every
+  field the user asked for), plus four new systems: **Scene Registry**
+  (`scene-registry.ts` — sorts by `order`, throws loudly on duplicate ids),
+  **Scene Loader** (`scene-loader.ts` — caches resolved components,
+  dedupes concurrent loads, implements what `preloadScene` actually does),
+  **Scene Lifecycle** (`scene-lifecycle.ts` — a real state machine,
+  `idle→loading→entering→active→exiting`, with a `canTransition` guard;
+  supersedes the earlier `TransitionPhase`), **Scene Events**
+  (`scene-events.ts` — typed pub/sub, non-React on purpose so
+  analytics/sound/preloading can subscribe later without forcing
+  re-renders). Rewired the existing store/context/provider/SceneManager/
+  SceneTransitionManager/DebugMode to the new model — `SceneTransitionManager`
+  now runs whatever transition the _incoming scene_ declares instead of a
+  hardcoded fade. `background` is always a CSS-var token reference (or
+  transparent/custom component), never a raw color — same discipline as
+  Rule #001. **Caught and fixed a real render-timing bug before it shipped:**
+  the first draft considered reading scene metadata from a module-level
+  registry populated via `useEffect`, which could get consulted during
+  render/other-effects before that effect had run; fixed by keeping scene
+  definitions on the explicit render path (context value, not a
+  side-effect-populated singleton) and having the registry be a genuine
+  secondary lookup structure instead of something the critical path
+  depends on. **Verified with a real (if throwaway) test:** no test
+  runner exists in this project, so ran a one-off `npx tsx` script
+  exercising the actual logic (registry ordering, duplicate-id guard,
+  lifecycle transitions, event bus delivery/unsubscribe, progress math) —
+  all 13 assertions passed — rather than trusting type-checking alone for
+  genuine runtime logic. Deleted the script after. **Documented gap, not
+  silently skipped:** exit choreography (`exitAnimation`) doesn't run yet
+  — requires keeping an outgoing scene mounted during the next scene's
+  load, which isn't built; the lifecycle events already fire so this is a
+  known, flagged limitation, not an oversight. No scene content created,
+  per instruction. Verified lint/typecheck/build clean.

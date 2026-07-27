@@ -1,4 +1,4 @@
-import type { SceneId } from "@/systems/experience/experience.types";
+import type { SceneId } from "@/systems/experience/scene.types";
 
 /** The scene after `currentId` in the registered order, or null at the end. */
 export function getNextSceneId(

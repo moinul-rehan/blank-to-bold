@@ -1,57 +1,68 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useExperienceStore } from "@/stores/experience-store";
 import { ExperienceContext } from "@/providers/experience-context";
-import {
-  getNextSceneId,
-  getPreviousSceneId,
-} from "@/systems/experience/scene-manager.engine";
+import { createSceneRegistry } from "@/systems/experience/scene-registry";
+import { preloadScene } from "@/systems/experience/scene-loader";
 import { calculateProgress } from "@/systems/experience/progress.engine";
-import type { SceneId } from "@/systems/experience/experience.types";
+import type {
+  SceneDefinition,
+  SceneId,
+} from "@/systems/experience/scene.types";
 
 export function ExperienceProvider({
-  sceneIds,
+  scenes,
   initialSceneId,
   children,
 }: {
-  sceneIds: SceneId[];
+  scenes: SceneDefinition[];
   initialSceneId?: SceneId;
   children: React.ReactNode;
 }) {
+  const registry = useMemo(() => createSceneRegistry(scenes), [scenes]);
+
   const registerScenes = useExperienceStore((state) => state.registerScenes);
   const goToScene = useExperienceStore((state) => state.goToScene);
+  const setLifecycle = useExperienceStore((state) => state.setLifecycle);
   const markEntered = useExperienceStore((state) => state.markEntered);
-  const setTransitionPhase = useExperienceStore(
-    (state) => state.setTransitionPhase,
-  );
-  const sceneIdsState = useExperienceStore((state) => state.sceneIds);
+  const sceneIds = useExperienceStore((state) => state.sceneIds);
   const activeSceneId = useExperienceStore((state) => state.activeSceneId);
   const previousSceneId = useExperienceStore((state) => state.previousSceneId);
-  const transitionPhase = useExperienceStore((state) => state.transitionPhase);
+  const lifecycle = useExperienceStore((state) => state.lifecycle);
   const hasEntered = useExperienceStore((state) => state.hasEntered);
 
   useEffect(() => {
-    registerScenes(sceneIds, initialSceneId);
-  }, [sceneIds, initialSceneId, registerScenes]);
+    registerScenes(registry.ids, initialSceneId);
+  }, [registry, initialSceneId, registerScenes]);
+
+  // What `preload` means in practice: once a scene settles, fetch the next
+  // one so its transition doesn't wait on the network.
+  useEffect(() => {
+    if (lifecycle !== "active" || !activeSceneId) return;
+    const nextId = registry.next(activeSceneId);
+    const nextScene = nextId ? registry.get(nextId) : undefined;
+    if (nextScene?.loadingStrategy === "preload") preloadScene(nextScene);
+  }, [lifecycle, activeSceneId, registry]);
 
   return (
     <ExperienceContext.Provider
       value={{
-        sceneIds: sceneIdsState,
+        registry,
+        activeScene: activeSceneId ? registry.get(activeSceneId) : undefined,
         activeSceneId,
         previousSceneId,
-        transitionPhase,
-        setTransitionPhase,
-        progress: calculateProgress(sceneIdsState, activeSceneId),
+        lifecycle,
+        setLifecycle,
+        progress: calculateProgress(sceneIds, activeSceneId),
         hasEntered,
         goToScene,
         next: () => {
-          const nextId = getNextSceneId(sceneIdsState, activeSceneId);
+          const nextId = registry.next(activeSceneId);
           if (nextId) goToScene(nextId);
         },
         previous: () => {
-          const previousId = getPreviousSceneId(sceneIdsState, activeSceneId);
+          const previousId = registry.previous(activeSceneId);
           if (previousId) goToScene(previousId);
         },
         markEntered,

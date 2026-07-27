@@ -5,40 +5,58 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useExperience } from "@/providers/experience-context";
 import { useAnimationContext } from "@/providers/animation-provider";
-import { getSceneTransitionTiming } from "@/systems/experience/transition.engine";
+import {
+  resolveSceneTransition,
+  TRANSITION_TO,
+} from "@/systems/experience/transition.engine";
+import { emitSceneEvent } from "@/systems/experience/scene-events";
 
 /**
- * Generic, scene-agnostic crossfade triggered whenever the active scene
- * changes. Doesn't know what a scene contains — only that it changed.
- * Individual scenes can still have their own internal animations; this
- * only owns the transition *between* scenes.
+ * Runs the transition *between* scenes, using whatever the incoming scene
+ * declared. Knows nothing about scene contents — a scene's own internal
+ * choreography is its `enterAnimation`, handled by the scene itself.
+ *
+ * Known gap: exit choreography (`exitAnimation`) isn't run yet — animating
+ * an outgoing scene requires keeping it mounted while the next one loads,
+ * which isn't built. `scene:exit-start` is emitted so subscribers can
+ * already react; the visual half is deliberately deferred until real
+ * scenes exist to test it against.
  */
 export function SceneTransitionManager({ children }: { children: ReactNode }) {
-  const { activeSceneId, setTransitionPhase } = useExperience();
+  const { activeScene, activeSceneId, previousSceneId, setLifecycle } =
+    useExperience();
   const { reducedMotion } = useAnimationContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !activeScene) return;
 
-    if (reducedMotion) {
-      gsap.set(containerRef.current, { opacity: 1 });
-      setTransitionPhase("idle");
+    if (previousSceneId) {
+      emitSceneEvent("scene:exit-start", { sceneId: previousSceneId });
+      emitSceneEvent("scene:exit-complete", { sceneId: previousSceneId });
+    }
+
+    const settle = () => {
+      emitSceneEvent("scene:enter-complete", { sceneId: activeScene.id });
+      setLifecycle("active");
+    };
+
+    if (reducedMotion || activeScene.transition.type === "none") {
+      gsap.set(containerRef.current, TRANSITION_TO);
+      settle();
       return;
     }
 
-    setTransitionPhase("entering");
-    const { duration, ease } = getSceneTransitionTiming();
-    gsap.fromTo(
-      containerRef.current,
-      { opacity: 0 },
-      {
-        opacity: 1,
-        duration,
-        ease,
-        onComplete: () => setTransitionPhase("idle"),
-      },
+    emitSceneEvent("scene:enter-start", { sceneId: activeScene.id });
+    const { from, duration, ease } = resolveSceneTransition(
+      activeScene.transition,
     );
+    gsap.fromTo(containerRef.current, from, {
+      ...TRANSITION_TO,
+      duration,
+      ease,
+      onComplete: settle,
+    });
   }, [activeSceneId, reducedMotion]);
 
   return (

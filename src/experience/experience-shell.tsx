@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
 import { ExperienceProvider } from "@/providers/experience-provider";
-import { SceneManager, type SceneRegistry } from "@/experience/scene-manager";
+import { SceneManager } from "@/experience/scene-manager";
 import { SceneTransitionManager } from "@/experience/scene-transition-manager";
 import { OverlayLayer } from "@/experience/overlay-layer";
 import { DebugMode } from "@/experience/debug-mode";
-import type { SceneId } from "@/systems/experience/experience.types";
+import type {
+  SceneDefinition,
+  SceneId,
+} from "@/systems/experience/scene.types";
 
 export type ExperienceShellProps = {
-  /** Every scene this experience can show. The Shell has no knowledge of what any of them contain. */
-  scenes: SceneRegistry;
+  /** Every scene this experience can show. Order comes from each scene's `order`, not this array. */
+  scenes: SceneDefinition[];
   initialSceneId?: SceneId;
 };
 
@@ -23,12 +25,10 @@ export function ExperienceShell({
   scenes,
   initialSceneId,
 }: ExperienceShellProps) {
-  const sceneIds = useMemo(() => Object.keys(scenes), [scenes]);
-
   return (
-    <ExperienceProvider sceneIds={sceneIds} initialSceneId={initialSceneId}>
+    <ExperienceProvider scenes={scenes} initialSceneId={initialSceneId}>
       <SceneTransitionManager>
-        <SceneManager registry={scenes} />
+        <SceneManager />
       </SceneTransitionManager>
       <OverlayLayer />
       <DebugMode />

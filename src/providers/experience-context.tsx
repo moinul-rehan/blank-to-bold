@@ -2,16 +2,20 @@
 
 import { createContext, useContext } from "react";
 import type {
+  SceneDefinition,
   SceneId,
-  TransitionPhase,
-} from "@/systems/experience/experience.types";
+} from "@/systems/experience/scene.types";
+import type { SceneRegistry } from "@/systems/experience/scene-registry";
+import type { SceneLifecycleState } from "@/systems/experience/scene-lifecycle";
 
 export type ExperienceContextValue = {
-  sceneIds: SceneId[];
+  registry: SceneRegistry;
+  /** The active scene's full definition — transition, background, interaction profile, etc. */
+  activeScene: SceneDefinition | undefined;
   activeSceneId: SceneId | null;
   previousSceneId: SceneId | null;
-  transitionPhase: TransitionPhase;
-  setTransitionPhase: (phase: TransitionPhase) => void;
+  lifecycle: SceneLifecycleState;
+  setLifecycle: (state: SceneLifecycleState) => void;
   /** 0–1 fraction through the registered scenes, by position. */
   progress: number;
   hasEntered: boolean;

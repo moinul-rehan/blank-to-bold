@@ -135,32 +135,71 @@ content-agnostic runtime the public Experience's scenes plug into — built
 before any scene content, per explicit instruction ("nothing hardcoded,"
 "do not design UI, only build the framework").
 
-- **`systems/experience/`** (engine — pure, no React): `experience.types.ts`
-  (`SceneId`, `TransitionPhase`), `scene-manager.engine.ts` (next/previous
-  scene by position), `progress.engine.ts` (0–1 progress by scene
-  position), `transition.engine.ts` (shared transition timing, reused from
-  `motion.tokens.ts`).
-- **`stores/experience-store.ts`** — scene registry, active/previous
-  scene, transition phase, `hasEntered`.
-- **`providers/experience-context.tsx`** + **`providers/experience-provider.tsx`** —
-  the context/hook (`useExperience()`) and the provider that wires the
-  store + engine together and registers whatever scenes it's given.
-- **`experience/scene-manager.tsx`** — renders whichever scene is active;
-  takes a `SceneRegistry` (`Record<SceneId, ComponentType>`) as a prop, so
-  it has zero knowledge of what scenes exist — same "engine doesn't know
-  about content" discipline as everything else in this codebase.
-- **`experience/scene-transition-manager.tsx`** — a generic crossfade
-  triggered when the active scene changes; doesn't know what's inside a
-  scene, only that it changed. Respects reduced motion.
-- **`experience/overlay-layer.tsx`** — an empty, non-interactive
-  fixed layer above all scenes (`z-overlay` token) — a slot for future
-  cross-scene UI (progress indicator, custom cursor), not itself any UI.
-- **`experience/debug-mode.tsx`** — dev-only HUD (`NODE_ENV === "development"`
-  gated) showing live scene/transition/progress state.
-- **`experience/experience-shell.tsx`** — composes all of the above. The
-  "root experience layout": `<ExperienceShell scenes={{ ... }} />`. Not
-  currently mounted anywhere — built as standalone infrastructure; how it
-  connects to an actual route is a separate decision.
+**The scene data model** (`systems/experience/scene.types.ts`) — every
+scene is a `SceneDefinition`: `id`, `title`, `order` (position — the
+registry sorts by this, not array/declaration order), `route`,
+`transition` (how it replaces the previous scene — fade/slide/scale/none),
+`loadingStrategy` (`eager`/`lazy`/`preload`), `enterAnimation` /
+`exitAnimation` (the scene's own internal choreography, distinct from the
+transition _between_ scenes), `background` (a token reference, transparent,
+or a custom component — never a hardcoded color, keeping
+[Rule #001](./12-engineering-rules.md) intact), `interactionProfile`
+(cursor variant / scroll lock / keyboard nav while showing), and
+`component` (always a function, so lazy scenes can be code-split).
+
+**Engine** (`systems/experience/`, pure, no React except type-only
+imports for `ComponentType`):
+
+- **`scene-registry.ts`** — `createSceneRegistry(definitions)` sorts by
+  `order`, throws loudly on a duplicate id (a silently-shadowed scene is a
+  worse failure than a crash), and exposes `get`/`getByRoute`/`next`/`previous`.
+- **`scene-loader.ts`** — resolves a scene's `component`, caching the
+  result so a scene is never fetched twice; concurrent requests for the
+  same scene share one in-flight promise. `preloadScene()` is what
+  `loadingStrategy: "preload"` actually means in practice — warms the
+  cache without blocking anything, failures are swallowed since a failed
+  preload is just a lost optimization (the real load retries later).
+- **`scene-lifecycle.ts`** — `SceneLifecycleState` (`idle → loading →
+entering → active → exiting`, plus `error`) and `canTransition()`, a
+  guard against out-of-order state writes. Supersedes the earlier
+  `TransitionPhase` — one state machine instead of two overlapping ones.
+- **`scene-events.ts`** — a typed pub/sub bus (`scene:load-start`,
+  `scene:enter-complete`, `scene:change`, etc.). Deliberately not React
+  state: subscribers are often non-React (analytics, sound, preloading),
+  and shouldn't force a re-render just to listen.
+- **`scene-manager.engine.ts`** / **`progress.engine.ts`** / **`transition.engine.ts`** —
+  unchanged from before: next/previous by position, 0–1 progress, and
+  turning a scene's declared `transition` into concrete GSAP tween values
+  (duration/ease still sourced from `motion.tokens.ts`).
+
+**React layer** (`src/experience/`):
+
+- **`scene-manager.tsx`** — renders the active scene. Loads it via
+  `scene-loader.ts` (synchronously if already cached, so a warm scene
+  never flashes a loading state), drives lifecycle transitions through the
+  store, and renders the scene's declared `background` before its content.
+  Has zero knowledge of what scenes exist beyond what the registry gives it.
+- **`scene-transition-manager.tsx`** — runs the transition _between_
+  scenes using whatever the incoming scene declared (not a hardcoded
+  fade). **Known gap, documented in the file itself:** exit choreography
+  isn't run yet — animating an outgoing scene requires keeping it mounted
+  while the next one loads, which isn't built; `scene:exit-start`/`-complete`
+  already fire so subscribers can react, the visual half is deferred until
+  real scenes exist to test it against.
+- **`overlay-layer.tsx`** — unchanged: an empty, non-interactive fixed
+  layer above all scenes, a slot for future cross-scene UI.
+- **`debug-mode.tsx`** — dev-only HUD, now shows lifecycle state,
+  transition type, loading strategy, and the full registered scene list.
+- **`experience-shell.tsx`** — composes all of the above:
+  `<ExperienceShell scenes={[...]} initialSceneId="..." />`. Not currently
+  mounted anywhere — standalone infrastructure; how it connects to an
+  actual route is a separate decision.
+
+**Provider** (`providers/experience-provider.tsx`) — builds the registry
+from whatever scenes it's given, registers them into the store, and
+implements what `preload` means: once the active scene reaches `active`,
+if the _next_ scene's `loadingStrategy` is `preload`, fetch it ahead of
+activation.
 
 ## Backend layers (planned — not yet created)
 

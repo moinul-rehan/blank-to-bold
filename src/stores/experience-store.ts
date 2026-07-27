@@ -1,20 +1,22 @@
 import { create } from "zustand";
-import type {
-  SceneId,
-  TransitionPhase,
-} from "@/systems/experience/experience.types";
+import type { SceneId } from "@/systems/experience/scene.types";
+import {
+  canTransition,
+  type SceneLifecycleState,
+} from "@/systems/experience/scene-lifecycle";
+import { emitSceneEvent } from "@/systems/experience/scene-events";
 
 type ExperienceState = {
   sceneIds: SceneId[];
   activeSceneId: SceneId | null;
   previousSceneId: SceneId | null;
-  transitionPhase: TransitionPhase;
+  lifecycle: SceneLifecycleState;
   /** Whether the initial entry into the experience has happened. */
   hasEntered: boolean;
 
   registerScenes: (sceneIds: SceneId[], initialSceneId?: SceneId) => void;
   goToScene: (id: SceneId) => void;
-  setTransitionPhase: (phase: TransitionPhase) => void;
+  setLifecycle: (state: SceneLifecycleState) => void;
   markEntered: () => void;
 };
 
@@ -22,7 +24,7 @@ export const useExperienceStore = create<ExperienceState>((set, get) => ({
   sceneIds: [],
   activeSceneId: null,
   previousSceneId: null,
-  transitionPhase: "idle",
+  lifecycle: "idle",
   hasEntered: false,
 
   registerScenes: (sceneIds, initialSceneId) =>
@@ -36,9 +38,14 @@ export const useExperienceStore = create<ExperienceState>((set, get) => ({
     const { sceneIds, activeSceneId } = get();
     if (!sceneIds.includes(id) || id === activeSceneId) return;
     set({ previousSceneId: activeSceneId, activeSceneId: id });
+    emitSceneEvent("scene:change", { from: activeSceneId, to: id });
   },
 
-  setTransitionPhase: (phase) => set({ transitionPhase: phase }),
+  /** Guarded by the lifecycle state machine — illegal transitions are ignored. */
+  setLifecycle: (next) => {
+    if (!canTransition(get().lifecycle, next)) return;
+    set({ lifecycle: next });
+  },
 
   markEntered: () => set({ hasEntered: true }),
 }));
