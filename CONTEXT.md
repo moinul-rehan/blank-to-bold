@@ -393,3 +393,47 @@ GitHub.cli`), authenticated via device flow, created the initial git
   renders correctly and unaffected. **Per explicit instruction this
   turn: did not commit or push — user will handle git themselves from
   here.**
+- **2026-07-28 — Reconciled with `blank-to-bold-main`.** Rehan has been
+  working on this same project from two machines: home PC pushed to a
+  separate repo (`moinul-rehan/blank-to-bold-main`), office PC (this
+  folder) is `blank-to-bold`. Investigated before touching anything — the
+  other repo shares real architecture DNA with this one (identical file
+  names: `scene-registry.ts`, `scene-loader.ts`, `transition.engine.ts`,
+  etc., same Rule #001 token discipline in its comments) but has gone much
+  further: real scene content for 8 scenes, a full 3D "Studio" room
+  (Three.js/`@react-three/fiber`/`drei`), a ~20-component primitives
+  library, and ~142MB of 3D assets (Maya scenes, `.obj`/`.dae`/`.glb`,
+  texture maps) committed raw to git — no Git LFS, no external storage.
+  Confirmed with Rehan: this repo (`blank-to-bold`) stays authoritative;
+  pull in specific useful pieces rather than adopting the other wholesale;
+  move the 3D assets out of git.
+  - Added `home-pc` remote (`blank-to-bold-main`), fetched, did **not**
+    attempt a git history merge — the two repos have unrelated histories
+    and heavily overlapping file names with different content, so an
+    automatic merge would conflict almost everywhere. Instead
+    cherry-picked specific paths via `git checkout home-pc/main -- <path>`.
+  - Pulled in: `src/features/studio/` (the 3D room feature — desk model,
+    12 room objects, hotspots, camera rig, panels) and the 6 primitives it
+    depends on (`text`, `section`, `container`, `button`, `heading`,
+    `stack` — verified each has zero cross-dependencies before pulling,
+    not the full ~20-component library). Did NOT pull the 8 scenes' real
+    content, the background system, or the magnetic cursor — flagged as
+    candidates, not pulled without a separate decision.
+  - `public/Studio/` (142MB of assets) checked out to disk, then
+    `git reset` to unstage and added to `.gitignore` — available locally
+    for dev without ever entering this repo's git history. Noted in the
+    ignore comment that these belong in external storage long-term, per
+    the `StorageAdapter` design already in docs/13.
+  - Added `three`, `@react-three/fiber`, `@react-three/drei` (deps) and
+    `@types/three` (dev dep).
+  - Added a temporary `/studio-preview` route (not part of real
+    navigation) so the 3D room is actually viewable here, without
+    touching the Door on `/`.
+  - Verified: lint/typecheck/build all pass; confirmed live in-browser —
+    `/studio-preview` renders the room's hotspot content, the
+    `Studio-room-day.png` background loads (200 OK) from the newly-synced
+    `public/Studio/`, zero console/server errors.
+  - **Open, not decided:** whether/how the 3D Studio room fits into the
+    actual site (it currently exists only at the temporary preview
+    route); the background system, magnetic cursor, and remaining
+    primitives are still just candidates, not pulled.

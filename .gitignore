@@ -37,6 +37,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# 3D source assets (Maya scenes, textures, raw model files) — large binary
+# files that don't belong in git history. Pulled from blank-to-bold-main
+# (home PC) for local dev access; belongs in external storage long-term
+# per the StorageAdapter design in docs/13-backend-architecture.md.
+/public/Studio/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

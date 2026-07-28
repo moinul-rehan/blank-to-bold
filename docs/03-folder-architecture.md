@@ -20,8 +20,11 @@ src/
 │   └── (studio)/        # (planned) Private creator platform routes
 │       └── api/         # (planned) Studio's typed REST API (Route Handlers) — see docs/15
 ├── components/          # Generic, reusable UI building blocks (not tied to a story beat)
-│   └── ui/               # shadcn/ui primitives (restyled/composed, never used as final components as-is)
-├── features/             # Experience: story-driven units that compose components + systems (empty so far)
+│   ├── ui/               # shadcn/ui primitives (restyled/composed, never used as final components as-is)
+│   └── primitives/       # A second, self-contained primitive set (text/section/container/button/heading/stack), pulled from blank-to-bold-main — see CONTEXT.md 2026-07-28. Reconciling with ui/ is an open question, not yet resolved.
+├── features/             # Experience: story-driven units that compose components + systems
+│   ├── door/              # The landing entry point — see 09-component-system.md
+│   └── studio/            # A 3D room (Three.js) pulled from blank-to-bold-main — viewable at the temporary /studio-preview route only; not wired into real navigation, whether it belongs in the actual site is undecided
 ├── studio/               # (planned) Studio-only UI: one folder per module (see docs/16)
 │   └── modules/
 │       ├── dashboard/
