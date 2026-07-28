@@ -15,6 +15,7 @@ import { useThemeStore } from "@/stores/theme-store";
 import { Hotspot } from "@/features/studio/hotspot";
 import { DeskModel3D } from "@/features/studio/desk-model-3d";
 import { BookshelfModel3D } from "@/features/studio/bookshelf-model-3d";
+import { WallBoard } from "@/features/studio/wall-board";
 import {
   AboutPanel,
   ProjectsPanel,
@@ -230,6 +231,9 @@ export function RoomStage() {
         >
           <BookshelfModel3D />
         </div>
+
+        {/* Wall board with sticky notes — flat composite, see wall-board.tsx for why. Centered on the "whiteboard" hotspot's own x/y so the dot lands on it. */}
+        <WallBoard />
 
         {/* Lamp toggle — no lamp asset yet, so this is its own control rather than a Hotspot (it changes the whole room, not just itself). */}
         <button
