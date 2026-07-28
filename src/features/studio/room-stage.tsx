@@ -219,15 +219,13 @@ export function RoomStage() {
         </div>
 
         {/* Bookshelf — a real 3D model (bookcase.glb), composited the same way as the desk above.
-            Moved to the "Process" hotspot's position (the `sketchbook` entry below, x: 32, y: 75) per
-            request. Hotspot's x/y are a left/top-center point (see hotspot.tsx); converted to this box's
-            left/bottom convention: left = x − width/2 = 32 − 6 = 26%, bottom = 100 − y = 25%. Width/height
-            kept as-is (12%/50%). Note: this range (26%–38%) now overlaps the desk's box (20.5%–80.5%) —
-            intentional per this placement, not re-checked visually (no browser/screenshot tool available
-            this round); flag if the two models visually collide once you look. */}
+            Left/width (26%/12%) confirmed correct — matches the "Process" hotspot's x position (32,
+            centered: 32 − 6). `bottom` dropped from 25% to 14% — same floor-line value already tuned for
+            the desk's box below — per feedback that it was floating above the floor instead of touching
+            it. Not re-checked visually this round (no browser/screenshot tool available). */}
         <div
           className="absolute"
-          style={{ left: "26%", width: "12%", bottom: "25%", height: "50%" }}
+          style={{ left: "26%", width: "12%", bottom: "14%", height: "50%" }}
         >
           <BookshelfModel3D />
         </div>
