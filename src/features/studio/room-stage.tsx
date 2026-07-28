@@ -14,6 +14,7 @@ import {
 import { useThemeStore } from "@/stores/theme-store";
 import { Hotspot } from "@/features/studio/hotspot";
 import { DeskModel3D } from "@/features/studio/desk-model-3d";
+import { BookshelfModel3D } from "@/features/studio/bookshelf-model-3d";
 import {
   AboutPanel,
   ProjectsPanel,
@@ -212,9 +213,20 @@ export function RoomStage() {
             a fresh screenshot before nudging further. */}
         <div
           className="absolute"
-          style={{ left: "20.5%", width: "60%", bottom: "21%", height: "45%" }}
+          style={{ left: "20.5%", width: "60%", bottom: "14%", height: "45%" }}
         >
           <DeskModel3D />
+        </div>
+
+        {/* Bookshelf — a real 3D model (bookcase.glb), composited the same way as the desk above.
+            Left corner, between the window (hotspot at x=16) and the desk (box starts at left=20.5%).
+            First-pass box, not visually confirmed this round (no browser/screenshot tool available) —
+            check against a fresh screenshot before nudging. */}
+        <div
+          className="absolute"
+          style={{ left: "3%", width: "15%", bottom: "14%", height: "50%" }}
+        >
+          <BookshelfModel3D />
         </div>
 
         {/* Lamp toggle — no lamp asset yet, so this is its own control rather than a Hotspot (it changes the whole room, not just itself). */}
