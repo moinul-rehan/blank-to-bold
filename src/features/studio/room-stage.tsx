@@ -199,16 +199,20 @@ export function RoomStage() {
         />
 
         {/* Desk — a real 3D model (see desk-model-3d.tsx for why), not a flat image like the rest of the room.
-            Set back toward the wall (per earlier feedback) but lowered so it actually meets the floor
-            line instead of floating above it, and sized up 10% per follow-up feedback. Moved further back
-            (smaller + higher) again per a live screenshot showing it floating too far into the empty
-            floor instead of reading as resting near the back wall; re-centered horizontally to match.
-            Nudged back again (smaller + higher, re-centered) per a follow-up screenshot still showing it
-            sitting forward of the wall — this is a reasoned estimate, not visually re-confirmed (no
-            browser/screenshot tool available this round); check against a fresh screenshot. */}
+            Position (this box) has gone through several rounds of "move back toward the wall" tuning —
+            see git history for the blow-by-blow. Sized up ~22% (width/height, re-centered) per feedback
+            that the desk/monitor read too small for the room — this is the right lever for on-screen size:
+            desk-model-3d.tsx's TARGET_SIZE is deliberately camera-compensated (see SCALE_RATIO there) so
+            changing it alone doesn't change how big the model looks, only this box's footprint does.
+            Height increased further (bottom held fixed, so it only grows upward) per feedback that the
+            model was cutting off at the top. Paired with a wider camera FOV in desk-model-3d.tsx — FOV is
+            *vertical* and fixed regardless of container size, so a taller box alone doesn't necessarily
+            reveal more content; both were adjusted together as a hedge, since which one actually mattered
+            couldn't be visually confirmed this round (no browser/screenshot tool available). Check against
+            a fresh screenshot before nudging further. */}
         <div
           className="absolute"
-          style={{ left: "26%", width: "49%", bottom: "21%", height: "24%" }}
+          style={{ left: "20.5%", width: "60%", bottom: "21%", height: "45%" }}
         >
           <DeskModel3D />
         </div>

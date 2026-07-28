@@ -155,9 +155,9 @@ function MonitorMesh() {
     // X/Z offset from center because the desk model's own bounding-box
     // center is skewed by an asymmetric extra part (a low side tray).
     <group
-      position={[MONITOR_X, DESK_SURFACE_Y, MONITOR_Z]}
+      position={[MONITOR_X, 1.7, 0.5]}
       scale={scale}
-      rotation={[Math.PI, 0, 0]}
+      rotation={[Math.PI / 2, Math.PI, 0]}
     >
       <mesh geometry={positioned} castShadow receiveShadow>
         <meshStandardMaterial
@@ -193,7 +193,13 @@ function CameraAim() {
 export function DeskModel3D() {
   return (
     <Canvas
-      camera={{ position: [CAMERA_X, CAMERA_Y, 0], fov: 30 }}
+      // fov is Three.js's *vertical* field of view — fixed regardless of the
+      // container's pixel size, so a taller container alone doesn't
+      // necessarily reveal more vertically (R3F re-fits the aspect ratio to
+      // the new box, but the same 30° vertical cone). Widened alongside the
+      // taller box in room-stage.tsx as a hedge against genuine top-of-frame
+      // clipping, not just a too-short container. Not visually confirmed.
+      camera={{ position: [CAMERA_X, CAMERA_Y, 0], fov: 36 }}
       gl={{ alpha: true, antialias: true }}
       dpr={[1, 1.75]}
       style={{ width: "100%", height: "100%", background: "transparent" }}
