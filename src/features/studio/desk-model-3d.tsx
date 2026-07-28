@@ -171,6 +171,54 @@ function MonitorMesh() {
 }
 
 /**
+ * Headset stand (with headphones) — another geometry-only STL, same deal as
+ * the monitor. Placed beside the monitor at the same desk-surface height
+ * (Y=1.7, matching the monitor's now-confirmed value) and the same depth
+ * (Z=0.5), offset in X to sit clear of it. No rotation applied — unlike the
+ * monitor's STL, which needed a specific flip for its own export's axis
+ * quirks, a stand is typically exported already resting upright on its own
+ * base, so identity rotation is the more defensible starting guess. Both
+ * the X offset and the target size are estimates; not visually confirmed
+ * (no browser/screenshot tool available this session) — expect to need
+ * tuning once seen, the same way the monitor did.
+ */
+const HEADSET_TARGET_SIZE = 0.55;
+const HEADSET_X = 0.9;
+const HEADSET_Y = 1.7;
+const HEADSET_Z = 0.5;
+
+function HeadsetStandMesh() {
+  const geometry = useLoader(STLLoader, "/Studio/headset-stand.stl");
+
+  const { positioned, scale } = useMemo(() => {
+    const geo = geometry.clone();
+    geo.computeBoundingBox();
+    const box =
+      geo.boundingBox ??
+      new THREE.Box3().setFromBufferAttribute(
+        geo.attributes.position as THREE.BufferAttribute,
+      );
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    // Center X/Z, rest its own base (min.y) at the group's y=0 — no flip,
+    // unlike the monitor.
+    geo.translate(-center.x, -box.min.y, -center.z);
+    return { positioned: geo, scale: HEADSET_TARGET_SIZE / maxDim };
+  }, [geometry]);
+
+  return (
+    <group position={[HEADSET_X, HEADSET_Y, HEADSET_Z]} scale={scale}>
+      <mesh geometry={positioned} castShadow receiveShadow>
+        <meshStandardMaterial color="#2a2a2a" roughness={0.5} metalness={0.3} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
  * Points the camera at the model's vertical middle once, on mount — no
  * pointer-driven movement. The desk should read as a fixed object in the
  * room, not something that shifts when the cursor moves (unlike the room's
@@ -211,6 +259,7 @@ export function DeskModel3D() {
       <Suspense fallback={null}>
         <DeskMesh />
         <MonitorMesh />
+        <HeadsetStandMesh />
       </Suspense>
     </Canvas>
   );
