@@ -171,69 +171,6 @@ function MonitorMesh() {
 }
 
 /**
- * Headset stand (with headphones) — another geometry-only STL, same deal as
- * the monitor. Placed beside the monitor at roughly the same desk-surface
- * depth (Z=0.5), offset in X to sit clear of it. Y started at the
- * monitor's own confirmed height (1.7) and has since been nudged down
- * twice per feedback. Now rotated (see `HEADSET_ROTATION` below) instead
- * of the original identity-rotation guess. Both the X offset and the
- * target size are estimates; not visually confirmed (no browser/screenshot
- * tool available this session) — expect to need tuning once seen, the
- * same way the monitor did.
- */
-const HEADSET_TARGET_SIZE = 0.55;
-const HEADSET_X = 0.9;
-const HEADSET_Y = 1.224; // 1.7 -> 1.53 (10% down) -> 1.224 (20% more down), per feedback
-const HEADSET_Z = 0.5;
-
-// Rotated 90° right (clockwise viewed from above — negative Y in Three.js's
-// right-handed system) per feedback, then 90° "up" as a positive X (pitch)
-// rotation — unlike the left/right/up/down CSS nudges elsewhere in this
-// room, a 3D pitch direction genuinely can't be reasoned about confidently
-// without seeing it (which way "up" tips depends on the model's own local
-// axes, not just screen space) — this is a best-guess sign, flag if it
-// tipped the wrong way.
-const HEADSET_ROTATION = new THREE.Euler(Math.PI / 2, -Math.PI / 2, 0);
-
-function HeadsetStandMesh() {
-  const geometry = useLoader(STLLoader, "/Studio/headset-stand.stl");
-
-  const { positioned, scale } = useMemo(() => {
-    const geo = geometry.clone();
-    // Bake the rotation into the geometry itself, before computing the
-    // resting bounding box — computing box.min.y on the *unrotated* mesh
-    // and then rotating the group afterward (the original approach) only
-    // rests correctly on the floor for the identity orientation. Once a
-    // pitch rotation tips the object, its rotated bottom is a different
-    // point entirely, so "stand on the table" needs the box measured in
-    // the FINAL orientation, not the export's raw one.
-    geo.applyQuaternion(new THREE.Quaternion().setFromEuler(HEADSET_ROTATION));
-    geo.computeBoundingBox();
-    const box =
-      geo.boundingBox ??
-      new THREE.Box3().setFromBufferAttribute(
-        geo.attributes.position as THREE.BufferAttribute,
-      );
-    const size = new THREE.Vector3();
-    const center = new THREE.Vector3();
-    box.getSize(size);
-    box.getCenter(center);
-    const maxDim = Math.max(size.x, size.y, size.z) || 1;
-    // Center X/Z, rest its (now-rotated) base at the group's y=0.
-    geo.translate(-center.x, -box.min.y, -center.z);
-    return { positioned: geo, scale: HEADSET_TARGET_SIZE / maxDim };
-  }, [geometry]);
-
-  return (
-    <group position={[HEADSET_X, HEADSET_Y, HEADSET_Z]} scale={scale}>
-      <mesh geometry={positioned} castShadow receiveShadow>
-        <meshStandardMaterial color="#2a2a2a" roughness={0.5} metalness={0.3} />
-      </mesh>
-    </group>
-  );
-}
-
-/**
  * Points the camera at the model's vertical middle once, on mount — no
  * pointer-driven movement. The desk should read as a fixed object in the
  * room, not something that shifts when the cursor moves (unlike the room's
@@ -274,7 +211,6 @@ export function DeskModel3D() {
       <Suspense fallback={null}>
         <DeskMesh />
         <MonitorMesh />
-        <HeadsetStandMesh />
       </Suspense>
     </Canvas>
   );

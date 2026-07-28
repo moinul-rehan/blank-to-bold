@@ -125,8 +125,23 @@ const HOTSPOTS: {
     id: "monitor",
     title: "Selected Work",
     subtitle: "Explore my projects",
-    x: 50,
-    y: 58,
+    // Computed, not guessed: the monitor is a real 3D object inside its
+    // own camera (desk-model-3d.tsx), so its on-screen position is
+    // derivable from that camera's math rather than eyeballed. Projected
+    // the monitor's position (MONITOR_X, 1.7, 0.5) through that Canvas's
+    // camera (position, lookAt, 36° vertical FOV) to get where its screen
+    // lands within the desk's own box (~42%, ~17% of the desk canvas),
+    // then mapped that into this room-stage's coordinates via the desk
+    // box's own left/width/bottom/height (24/60/14/45). One real
+    // assumption baked in: the desk canvas's on-screen aspect ratio
+    // (guessed ~2.2, since it depends on the actual viewport, not a fixed
+    // number) — affects the horizontal estimate more than the vertical
+    // one. Replaces the old (50, 58) eyeballed guess, which sat visibly
+    // low relative to where this math puts the monitor (Y=1.7 is well
+    // above the camera's own look-at height of 0.77, so the screen should
+    // read notably higher in frame). Not visually confirmed.
+    x: 49,
+    y: 49,
   },
   {
     id: "mug",
