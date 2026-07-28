@@ -437,3 +437,51 @@ GitHub.cli`), authenticated via device flow, created the initial git
     actual site (it currently exists only at the temporary preview
     route); the background system, magnetic cursor, and remaining
     primitives are still just candidates, not pulled.
+- **2026-07-28 (cont.) — Studio room declared the permanent MASTER SCENE.**
+  Rehan spent this session hand-tuning the room's composited objects (desk
+  scale/position, monitor placement, a new headset stand, a new bookshelf
+  aligned to the "Process" hotspot, a new wall board with sticky notes) —
+  see git history for the blow-by-blow, all done blind (no
+  browser/screenshot tool available). He then issued a full master
+  experience philosophy: the room is the permanent interface (not a
+  traditional page-based site), camera-driven point-and-click-museum
+  navigation, invisible hotspots (no visible buttons/labels), and a
+  cinematic per-object focus mode (camera dollies to the clicked object,
+  keeps it sharp, blurs/dims everything else) with smooth ESC/back return
+  to a fixed "MASTER CAMERA." Explicit instruction: don't redesign the
+  room's layout/camera/object positions going forward unless asked.
+  - **Architecture conflict surfaced and resolved via user choice:**
+    "camera physically travels through 3D space" is only literally true in
+    a single unified 3D scene — which is exactly what the orphaned
+    `room-environment-3d.tsx` was, abandoned earlier in the project. The
+    room today is a flat photo (`Studio-room-day.png`/`night.png`) with a
+    CSS scale+transform-origin "camera" (`use-room-camera.ts`) and a few
+    independently-composited objects (desk/monitor/headset stand,
+    bookshelf, wall board each their own layer; everything else still just
+    an x/y point with no real asset). Rebuilding as one true 3D world would
+    mean redoing the room's whole composition — directly conflicting with
+    "don't redesign the room." Presented both paths with trade-offs;
+    **Rehan chose evolving the current flat-photo hybrid**, not a full 3D
+    rebuild. Consequence, stated explicitly and accepted: true
+    sharp-object/blurred-background focus mode only works per object once
+    that object has its own separated visual asset (already true for
+    desk/bookshelf/wall-board; not yet true for mug, window, drawer,
+    notebook, sketchbook, photo-frame) — same incremental,
+    one-asset-at-a-time workflow already underway.
+  - **First slice shipped this pass:** `hotspot.tsx` rewritten — invisible
+    hit zone at rest (no dot, no persistent label), hover/focus reveals a
+    soft glow + one-line tooltip + cursor change, `focus-visible` mirrors
+    hover so keyboard users retain an affordance. `room-stage.tsx`: dropped
+    the now-dead `align` field/prop; Escape key now closes the active
+    panel via the same `blur()` tween the backdrop/"← Room" button already
+    use (no instant close). The lamp toggle was deliberately left as-is —
+    it's a room-level utility control, not one of the narrative "chapter"
+    objects the spec targets.
+  - **Explicitly NOT built yet, next up:** the actual per-object camera
+    dolly/focus-mode rework (replacing `use-room-camera.ts`'s uniform
+    whole-stage zoom+blur with a per-object virtual dolly + layer-separated
+    sharp-object/blurred-background), curved/eased cinematic paths, and the
+    per-object content-reveal choreography (monitor boot animation, book
+    opening, mug steam, photo → About transition) described in the spec.
+    Deliberately scoped out of this pass — bigger, riskier lift that
+    touches every already-tuned position; planned as its own turn.

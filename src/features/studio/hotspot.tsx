@@ -1,52 +1,56 @@
 "use client";
 
-import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Text } from "@/components/primitives/text";
 
 export type HotspotProps = {
   x: number;
   y: number;
   title: string;
-  subtitle: string;
   onActivate: () => void;
-  /** Label defaults to the left; flip when a hotspot sits near the right edge. */
-  align?: "left" | "right";
 };
 
 /**
- * The placeholder navigation marker for any object that doesn't have its
- * own illustrated asset yet — a dot + persistent label, same visual
- * language the reference used for its own navigation, not a degraded
- * fallback. Swap for the real object's own hover mechanic once it has an
- * asset (see `RoomObject`).
+ * An object's click target in the room — invisible at rest. Per the
+ * "museum, not a website" direction: no visible buttons, no persistent
+ * labels; discovery is part of the experience, the reward for exploring is
+ * the hover glow + cursor change + tiny tooltip, not an always-on marker.
+ * `focus-visible` mirrors the hover state so keyboard users aren't left
+ * with zero affordance (invisible-until-hover shouldn't mean
+ * invisible-until-focus too). Tooltip flips to sit below the point for
+ * hotspots near the top edge (y < 18) so it doesn't clip off-screen.
  */
-export function Hotspot({ x, y, title, subtitle, onActivate, align = "left" }: HotspotProps) {
-  const reducedMotion = useReducedMotion();
+export function Hotspot({ x, y, title, onActivate }: HotspotProps) {
+  const tooltipBelow = y < 18;
 
   return (
     <button
       type="button"
       onClick={onActivate}
       data-cursor="interactive"
-      aria-label={`${title} — ${subtitle}`}
-      className="group absolute -translate-x-1/2 -translate-y-1/2 border-0 bg-transparent p-0"
-      style={{ left: `${x}%`, top: `${y}%` }}
+      aria-label={title}
+      className="group absolute -translate-x-1/2 -translate-y-1/2 border-0 bg-transparent p-0 outline-none"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        width: "2.75rem",
+        height: "2.75rem",
+      }}
     >
+      {/* Hover/focus glow — the only "brightening" available until this object has its own real asset (see the desk/bookshelf/wall-board objects, which already do and can get a more targeted glow later). */}
       <span
         aria-hidden
-        className="border-background bg-background block size-3 rounded-full border-2 shadow-[0_0_0_4px_rgba(0,0,0,0.25)] transition-transform duration-300 group-hover:scale-125"
-        style={{ animation: reducedMotion ? undefined : "hotspot-pulse 2.4s ease-in-out infinite" }}
+        className="pointer-events-none absolute inset-0 scale-100 rounded-full opacity-0 blur-xl transition-[opacity,transform] duration-500 group-hover:scale-105 group-hover:opacity-40 group-focus-visible:scale-105 group-focus-visible:opacity-40"
+        style={{ background: "var(--primary)" }}
       />
+
+      {/* Minimal tooltip — one line, no card, no persistent label. */}
       <span
-        className={`bg-background/90 border-border pointer-events-none absolute top-1/2 flex -translate-y-1/2 flex-col gap-0.5 rounded-md border px-3 py-2 whitespace-nowrap opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 ${
-          align === "right" ? "right-full mr-3 items-end" : "left-full ml-3 items-start"
+        className={`bg-background/90 border-border pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full border px-3 py-1 whitespace-nowrap opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 ${
+          tooltipBelow ? "top-full mt-3" : "bottom-full mb-3"
         }`}
       >
-        <Text as="span" className="text-foreground text-xs font-medium">
+        <Text as="span" className="text-foreground text-[0.65rem] font-medium">
           {title}
-        </Text>
-        <Text as="span" className="text-muted-foreground text-[0.65rem]">
-          {subtitle}
         </Text>
       </span>
     </button>

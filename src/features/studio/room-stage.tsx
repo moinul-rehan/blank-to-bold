@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  useCallback,
+  useEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -43,9 +45,11 @@ const PANELS: Record<string, ComponentType<{ onClose: () => void }>> = {
 };
 
 /**
- * Each entry: id, camera-focus target (%), hotspot label position (%, can
- * differ slightly from the focus target for readability), and which side
- * the label card opens toward.
+ * Each entry: id, camera-focus target (%), and the invisible hotspot's
+ * position (%, can differ slightly from the focus target for readability).
+ * `subtitle` isn't rendered anywhere yet — it documents each object's
+ * narrative role ("why is this object here") ahead of the content-reveal
+ * work described in the master experience spec, not dead data.
  */
 const HOTSPOTS: {
   id: string;
@@ -53,7 +57,6 @@ const HOTSPOTS: {
   subtitle: string;
   x: number;
   y: number;
-  align?: "left" | "right";
 }[] = [
   {
     id: "window",
@@ -82,7 +85,6 @@ const HOTSPOTS: {
     subtitle: "Quick experiments",
     x: 90,
     y: 28,
-    align: "right",
   },
   {
     id: "bookshelf",
@@ -90,7 +92,6 @@ const HOTSPOTS: {
     subtitle: "Books & timeline",
     x: 90,
     y: 48,
-    align: "right",
   },
   {
     id: "sketchbook",
@@ -161,10 +162,22 @@ export function RoomStage() {
     setActivePanel(id);
   };
 
-  const close = () => {
+  const close = useCallback(() => {
     setActivePanel(null);
     blur();
-  };
+  }, [blur]);
+
+  // ESC always returns smoothly to the master camera (`blur()` is the same
+  // GSAP tween the "Zoom back out" backdrop and the panel's "← Room" button
+  // use) — never an instant close, per the master experience spec.
+  useEffect(() => {
+    if (!focusId) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [focusId, close]);
 
   const toggleLamp = () => {
     useThemeStore.getState().setTheme(lit ? "dark" : "light");
@@ -264,8 +277,6 @@ export function RoomStage() {
             x={h.x}
             y={h.y}
             title={h.title}
-            subtitle={h.subtitle}
-            align={h.align}
             onActivate={() => activate(h.id, { x: h.x, y: h.y })}
           />
         ))}
