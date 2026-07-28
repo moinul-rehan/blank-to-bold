@@ -8,7 +8,7 @@
  * fine without real depth — same reasoning as the lamp toggle staying a
  * plain DOM element instead of a model. Originally centered on the
  * "whiteboard" hotspot's own x/y (42, 20) so the dot would land on the
- * board; moved per feedback several times (left 42 → 48 → 80 → 60), which
+ * board; moved per feedback several times (left 42 → 48 → 80 → 60 → 70), which
  * the hotspot position in room-stage.tsx was NOT moved to match — the dot
  * no longer lands on the board at this position. Size/placement are a
  * first-pass estimate against the room photo's plain gray wall — not
@@ -32,7 +32,7 @@ export function WallBoard() {
     <div
       aria-hidden
       className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ left: "60%", top: "20%", width: "7.5%", aspectRatio: "4 / 3" }}
+      style={{ left: "70%", top: "20%", width: "7.5%", aspectRatio: "4 / 3" }}
     >
       {/* Frame */}
       <div
