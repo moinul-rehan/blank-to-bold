@@ -29,7 +29,7 @@ export function WallBoard() {
     <div
       aria-hidden
       className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ left: "42%", top: "20%", width: "15%", aspectRatio: "4 / 3" }}
+      style={{ left: "42%", top: "20%", width: "7.5%", aspectRatio: "4 / 3" }}
     >
       {/* Frame */}
       <div
