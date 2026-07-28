@@ -209,11 +209,12 @@ export function RoomStage() {
             model was cutting off at the top. Paired with a wider camera FOV in desk-model-3d.tsx — FOV is
             *vertical* and fixed regardless of container size, so a taller box alone doesn't necessarily
             reveal more content; both were adjusted together as a hedge, since which one actually mattered
-            couldn't be visually confirmed this round (no browser/screenshot tool available). Check against
-            a fresh screenshot before nudging further. */}
+            couldn't be visually confirmed this round (no browser/screenshot tool available). `left` nudged
+            slightly right (desk + monitor move together, same canvas) — width/bottom/height untouched, so
+            scale and floor alignment stay exactly as already tuned. */}
         <div
           className="absolute"
-          style={{ left: "20.5%", width: "60%", bottom: "14%", height: "45%" }}
+          style={{ left: "24%", width: "60%", bottom: "14%", height: "45%" }}
         >
           <DeskModel3D />
         </div>
