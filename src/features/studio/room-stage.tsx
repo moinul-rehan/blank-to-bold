@@ -9,10 +9,12 @@ import {
   type ComponentType,
 } from "react";
 import Image from "next/image";
+import gsap from "gsap";
 import {
   useRoomCamera,
   type RoomCameraTarget,
 } from "@/features/studio/use-room-camera";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useThemeStore } from "@/stores/theme-store";
 import { Hotspot } from "@/features/studio/hotspot";
 import { DeskModel3D } from "@/features/studio/desk-model-3d";
@@ -28,7 +30,6 @@ import {
   HiddenPlaygroundPanel,
   FutureVisionPanel,
   RandomFactsPanel,
-  SystemsThinkingPanel,
 } from "@/features/studio/room-panels";
 
 const PANELS: Record<string, ComponentType<{ onClose: () => void }>> = {
@@ -41,8 +42,28 @@ const PANELS: Record<string, ComponentType<{ onClose: () => void }>> = {
   drawer: HiddenPlaygroundPanel,
   window: FutureVisionPanel,
   mug: RandomFactsPanel,
-  whiteboard: SystemsThinkingPanel,
 };
+
+/**
+ * Objects whose own composited visual IS the content once the camera
+ * reaches them — no separate PanelShell overlay stacked on top (per the
+ * master spec: "the object is the entrance to the content," not a
+ * placeholder that hands off to a generic card). Currently just the wall
+ * board: zooming in on it, centered and enlarged, already shows every
+ * sticky note — a modal on top of that would just cover it back up.
+ * `room-panels.tsx`'s `SystemsThinkingPanel` still exists (unused here) in
+ * case a deeper second layer gets wired to it later.
+ */
+const FOCUS_ONLY_IDS = new Set(["whiteboard"]);
+
+// Must match WallBoard's own left/top (wall-board.tsx).
+const BOARD_X = 66;
+const BOARD_Y = 35;
+// The board starts at only 7.5% of the stage's width — the stage's generic
+// FOCUS_SCALE (2.3x, tuned for the room overall) barely enlarges something
+// that small. This is board-specific so it can end up around half the
+// viewport width when focused, independent of the backdrop's own zoom.
+const BOARD_FOCUS_SCALE = 7.3;
 
 /**
  * Each entry: id, camera-focus target (%), and the invisible hotspot's
@@ -64,13 +85,6 @@ const HOTSPOTS: {
     subtitle: "Where this is heading",
     x: 16,
     y: 34,
-  },
-  {
-    id: "whiteboard",
-    title: "Systems Thinking",
-    subtitle: "Architecture & flows",
-    x: 42,
-    y: 20,
   },
   {
     id: "photo-frame",
@@ -142,14 +156,19 @@ function subscribeDarkClass(callback: () => void) {
 
 /**
  * The room itself — a photographed-studio background (day/night pair) with
- * a composited desk image and, until each object has its own asset, dot
- * marker hotspots for navigation. The "camera" is a scale + transform-origin
- * trick on the whole stage (`useRoomCamera`), not a real 3D camera.
+ * composited objects and, until every object has its own asset, invisible
+ * hotspots for the rest. The "camera" is a scale + counter-translate trick
+ * on the whole stage (`useRoomCamera`), not a real 3D camera — but it does
+ * bring the clicked target to the exact center of the screen, same as a
+ * real dolly-and-frame would.
  */
 export function RoomStage() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const boardRef = useRef<HTMLButtonElement>(null);
   const { focusId, focus, blur } = useRoomCamera(stageRef);
   const [activePanel, setActivePanel] = useState<string | null>(null);
+  const reducedMotion = useReducedMotion();
   const isDark = useSyncExternalStore(
     subscribeDarkClass,
     () => document.documentElement.classList.contains("dark"),
@@ -159,7 +178,7 @@ export function RoomStage() {
 
   const activate = (id: string, target: RoomCameraTarget) => {
     focus(id, target);
-    setActivePanel(id);
+    if (!FOCUS_ONLY_IDS.has(id)) setActivePanel(id);
   };
 
   const close = useCallback(() => {
@@ -179,6 +198,35 @@ export function RoomStage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [focusId, close]);
 
+  // The board's own zoom, independent of (but synced in timing/easing with)
+  // the backdrop's blur/dim tween in useRoomCamera — see wall-board.tsx for
+  // why it needs to live outside the filtered stage. `xPercent`/`yPercent`
+  // stay fixed at -50 (the board's own self-centering, since it no longer
+  // uses the CSS translate utility other room elements use); `x`/`y` are
+  // real pixel offsets (measured against the shared container) that move
+  // the board's anchor point from its resting (66%, 35%) position to the
+  // container's exact center — scale-independent, since scaling the board
+  // around its own center never displaces that center (unlike the
+  // stage-wide zoom, which needs a scale-multiplied offset instead).
+  useEffect(() => {
+    const el = boardRef.current;
+    const container = containerRef.current;
+    if (!el || !container) return;
+    const focused = focusId === "whiteboard";
+    const rect = container.getBoundingClientRect();
+    const dx = ((50 - BOARD_X) / 100) * rect.width;
+    const dy = ((50 - BOARD_Y) / 100) * rect.height;
+    gsap.to(el, {
+      xPercent: -50,
+      yPercent: -50,
+      x: focused ? dx : 0,
+      y: focused ? dy : 0,
+      scale: focused ? BOARD_FOCUS_SCALE : 1,
+      duration: reducedMotion ? 0 : focused ? 1.1 : 0.9,
+      ease: "power3.inOut",
+    });
+  }, [focusId, reducedMotion]);
+
   const toggleLamp = () => {
     useThemeStore.getState().setTheme(lit ? "dark" : "light");
   };
@@ -186,7 +234,10 @@ export function RoomStage() {
   const ActivePanelComponent = activePanel ? PANELS[activePanel] : null;
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-black">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-black"
+    >
       <div
         ref={stageRef}
         className="absolute inset-0"
@@ -245,9 +296,6 @@ export function RoomStage() {
           <BookshelfModel3D />
         </div>
 
-        {/* Wall board with sticky notes — flat composite, see wall-board.tsx for why. Centered on the "whiteboard" hotspot's own x/y so the dot lands on it. */}
-        <WallBoard />
-
         {/* Lamp toggle — no lamp asset yet, so this is its own control rather than a Hotspot (it changes the whole room, not just itself). */}
         <button
           type="button"
@@ -281,6 +329,17 @@ export function RoomStage() {
           />
         ))}
       </div>
+
+      {/* Wall board with sticky notes — rendered outside the stage above, not
+          inside it: see wall-board.tsx for why (needs to stay sharp while the
+          stage blurs/dims). Its own hover mechanic replaces a separate
+          Hotspot, matching "swap for the real object's own hover mechanic
+          once it has an asset." Focus target (BOARD_X, BOARD_Y) matches the
+          board's own resting position — keep them in sync if it moves again. */}
+      <WallBoard
+        ref={boardRef}
+        onActivate={() => activate("whiteboard", { x: BOARD_X, y: BOARD_Y })}
+      />
 
       {focusId && (
         <button

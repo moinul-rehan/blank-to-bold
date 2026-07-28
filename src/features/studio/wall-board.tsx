@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import { Caveat } from "next/font/google";
 
 /**
@@ -12,19 +13,35 @@ import { Caveat } from "next/font/google";
 const handwriting = Caveat({ subsets: ["latin"], weight: ["600", "700"] });
 
 /**
- * A wooden-framed board with sticky notes, composited onto the wall near
- * the "whiteboard" hotspot (Systems Thinking — architecture & flows). Flat
- * HTML/CSS rather than a 3D model: unlike the desk objects, this sits
- * flush against the wall facing the camera head-on, so it reads fine
- * without real depth — same reasoning as the lamp toggle staying a plain
- * DOM element instead of a model. Originally centered on the "whiteboard"
- * hotspot's own x/y (42, 20) so the dot would land on the board; moved per
- * feedback several times since (left 42 → 48 → 80 → 60 → 66, top 20 → 35),
- * which the hotspot position in room-stage.tsx was NOT moved to match —
- * the dot no longer lands on the board at this position. Size/placement
- * are a first-pass estimate against the room photo's plain gray wall — not
- * visually confirmed on top of the actual composited scene (no
- * browser/screenshot tool available this session).
+ * A wooden-framed board with sticky notes, composited onto the wall (the
+ * "whiteboard" id — Systems Thinking, architecture & flows). Flat HTML/CSS
+ * rather than a 3D model: unlike the desk objects, this sits flush against
+ * the wall facing the camera head-on, so it reads fine without real depth
+ * — same reasoning as the lamp toggle staying a plain DOM element instead
+ * of a model. Is itself the click target (see the exported component) —
+ * no separate Hotspot, since it's a real asset now, not an invisible
+ * point. Clicking it focuses the camera on it directly (centered, per
+ * `use-room-camera.ts`) rather than opening a separate panel overlay — the
+ * enlarged, centered board already shows every note, so a modal on top
+ * would just cover it back up (see room-stage.tsx's `FOCUS_ONLY_IDS`).
+ * Position moved several times per feedback (left 42 → 48 → 80 → 60 → 66,
+ * top 20 → 35); this final position (66, 35) must stay in sync with
+ * `BOARD_X`/`BOARD_Y` in room-stage.tsx if it moves again — both the focus
+ * target and the standalone focus-zoom math there depend on it.
+ *
+ * Rendered as a sibling of the blurred/dimmed room stage in
+ * room-stage.tsx, not nested inside it — a real screenshot showed the
+ * board visibly softened by the stage's focus filter (a 1.5px blur reads
+ * as much more once magnified by the zoom scale) plus too small to read
+ * comfortably at the stage's generic 2.3x zoom. room-stage.tsx drives this
+ * board's own independent, larger zoom+recenter via a ref, in parallel
+ * with the backdrop's blur/dim — so it stays sharp while the room around
+ * it softens. No `-translate-x/y-1/2` utility class here (unlike other
+ * self-centering room elements) — GSAP owns the full transform
+ * (`xPercent`/`yPercent` baseline plus the animated `x`/`y`/`scale`) once
+ * it's driving this element, and mixing a class-based transform with
+ * GSAP's is fragile, so the centering itself is set from room-stage.tsx
+ * instead of Tailwind.
  */
 const STICKY_NOTES: {
   top: string;
@@ -123,16 +140,30 @@ function StickyNote({
   );
 }
 
-export function WallBoard() {
+export const WallBoard = forwardRef<
+  HTMLButtonElement,
+  { onActivate: () => void }
+>(function WallBoard({ onActivate }, ref) {
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
+    <button
+      ref={ref}
+      type="button"
+      onClick={onActivate}
+      data-cursor="interactive"
+      aria-label="Board — Think in Systems, Users First, Iterate Fast, Details Matter"
+      className="group absolute border-0 bg-transparent p-0 outline-none"
       style={{ left: "66%", top: "35%", width: "7.5%", aspectRatio: "4 / 3" }}
     >
+      {/* Hover/focus glow — same "brighten + soft glow" language as the invisible hotspots (see hotspot.tsx), but sized to the board's own footprint since it's a real asset. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-[-20%] -z-10 rounded-md opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-40 group-focus-visible:opacity-40"
+        style={{ background: "var(--primary)" }}
+      />
+
       {/* Frame */}
       <div
-        className="absolute inset-0 rounded-sm shadow-lg"
+        className="absolute inset-0 rounded-sm shadow-lg transition-[filter] duration-500 group-hover:brightness-110 group-focus-visible:brightness-110"
         style={{ background: "#8a5a34", padding: "4%" }}
       >
         {/* Cork surface — radial dot texture instead of a flat fill, so the board reads as cork rather than a plain tan rectangle even at a glance. */}
@@ -148,6 +179,7 @@ export function WallBoard() {
           ))}
         </div>
       </div>
-    </div>
+    </button>
   );
-}
+});
+WallBoard.displayName = "WallBoard";
