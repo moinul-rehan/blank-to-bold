@@ -6,8 +6,11 @@
  * flows). Flat HTML/CSS rather than a 3D model: unlike the desk objects,
  * this sits flush against the wall facing the camera head-on, so it reads
  * fine without real depth — same reasoning as the lamp toggle staying a
- * plain DOM element instead of a model. Centered on the same x/y (42, 20)
- * as the "whiteboard" hotspot so the hotspot dot lands on the board itself.
+ * plain DOM element instead of a model. Originally centered on the
+ * "whiteboard" hotspot's own x/y (42, 20) so the dot would land on the
+ * board; nudged right per feedback (left 42 → 48), which the hotspot
+ * position in room-stage.tsx was NOT moved to match — the dot now sits
+ * slightly left of the board's center rather than dead-center on it.
  * Size/placement are a first-pass estimate against the room photo's plain
  * gray wall — not visually confirmed on top of the actual composited scene
  * (no browser/screenshot tool available this session).
@@ -29,7 +32,7 @@ export function WallBoard() {
     <div
       aria-hidden
       className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ left: "42%", top: "20%", width: "7.5%", aspectRatio: "4 / 3" }}
+      style={{ left: "48%", top: "20%", width: "7.5%", aspectRatio: "4 / 3" }}
     >
       {/* Frame */}
       <div
