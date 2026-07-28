@@ -14,13 +14,29 @@ import * as THREE from "three";
  * ffmpeg was) — ~215KB total instead. Detail groups 2/4/5 are solid-color
  * parts (screws/metal) in the source, hence the tiny file sizes.
  */
-const TEXTURE_URLS = [1, 2, 3, 4, 5, 6, 7].map((n) => `/Studio/desk-model/detail${n}_diffuse.webp`);
+const TEXTURE_URLS = [1, 2, 3, 4, 5, 6, 7].map(
+  (n) => `/Studio/desk-model/detail${n}_diffuse.webp`,
+);
 
-/** World-space size the model's largest raw dimension gets normalized to — was reduced ~15%, then upsized 10% back per follow-up feedback. */
-const TARGET_SIZE = 2.43;
+/**
+ * World-space size the model's largest raw dimension gets normalized to.
+ * The last tuned baseline was 2.43 (reduced ~15%, upsized 10% back) — that's
+ * also where the desk correctly touched the floor and the camera framing
+ * was correct. A prior in-progress edit bumped this to 10.43 (and a
+ * follow-up miscalculation of mine compounded it further to ~12.6, ~5.2x
+ * the baseline) without scaling anything else that depends on it — at that
+ * scale the desk overshot toward the camera and the monitor landed off the
+ * desktop. Fixed by going back to the original baseline and applying
+ * exactly the requested +10% on top of it, with every dependent constant
+ * below (monitor position/size, camera) derived from the same
+ * `SCALE_RATIO` so they move together instead of drifting independently.
+ */
+const BASELINE_TARGET_SIZE = 2.43;
+const TARGET_SIZE = BASELINE_TARGET_SIZE * 1.1;
+const SCALE_RATIO = TARGET_SIZE / BASELINE_TARGET_SIZE;
 
 /** Kept proportional to `TARGET_SIZE` so desk/monitor scale stays realistic relative to each other. */
-const MONITOR_TARGET_SIZE = 0.89;
+const MONITOR_TARGET_SIZE = 0.89 * SCALE_RATIO;
 /**
  * Estimated desk-surface height in this shared scene's units, scaled with
  * the desk. The desk's own bounding box includes the chair (its tallest
@@ -28,7 +44,23 @@ const MONITOR_TARGET_SIZE = 0.89;
  * the right value here — this is a starting guess at roughly where the
  * surface actually sits, expected to need tuning once visible.
  */
-const DESK_SURFACE_Y = 0.94;
+const DESK_SURFACE_Y = 0.94 * SCALE_RATIO;
+/**
+ * X/Z offset for where the monitor sits on the desktop. Nudged from -0.55
+ * toward center once already (a live screenshot showed it sitting too far
+ * left). A follow-up screenshot still showed it left-of-center, with open
+ * desk surface visible to its right — nudged again, by a smaller step this
+ * time to avoid overshooting the way `TARGET_SIZE` did earlier in this
+ * file. Not visually re-confirmed (no browser/screenshot tool available
+ * this round) — check against a fresh screenshot before nudging further.
+ * Scaled with the desk.
+ */
+const MONITOR_X = 0.05 * SCALE_RATIO;
+const MONITOR_Z = 0.25 * SCALE_RATIO;
+/** Camera framing — scaled with the desk so a bigger desk doesn't change the viewing angle (that mismatch was the actual cause of the "tilted surface" look). */
+const CAMERA_X = 4 * SCALE_RATIO;
+const CAMERA_Y = 1.3 * SCALE_RATIO;
+const CAMERA_LOOKAT_Y = 0.7 * SCALE_RATIO;
 
 function DeskMesh() {
   const obj = useLoader(OBJLoader, "/Studio/desk-model/computer_desk.obj");
@@ -44,7 +76,9 @@ function DeskMesh() {
       // robust than trusting exact group naming, with array position as a
       // last-resort fallback in file order (1,2,3,4,5,6,7).
       const match = /detal(\d)/i.exec(child.name);
-      const texture = match ? textures[Number(match[1]) - 1] : textures[meshIndex % textures.length];
+      const texture = match
+        ? textures[Number(match[1]) - 1]
+        : textures[meshIndex % textures.length];
       meshIndex += 1;
       child.material = new THREE.MeshStandardMaterial({
         map: texture,
@@ -94,7 +128,11 @@ function MonitorMesh() {
   const { positioned, scale } = useMemo(() => {
     const geo = geometry.clone();
     geo.computeBoundingBox();
-    const box = geo.boundingBox ?? new THREE.Box3().setFromBufferAttribute(geo.attributes.position as THREE.BufferAttribute);
+    const box =
+      geo.boundingBox ??
+      new THREE.Box3().setFromBufferAttribute(
+        geo.attributes.position as THREE.BufferAttribute,
+      );
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
     box.getSize(size);
@@ -112,14 +150,21 @@ function MonitorMesh() {
     // The source STL sits upside-down in its own coordinates (its "up" is
     // -Y, not +Y) — flipped 180° around X (swaps up/down; a monitor's
     // roughly bilaterally symmetric so the left/right mirror this also
-    // causes isn't visible). The added 90° yaw was wrong (screen ended up
-    // edge-on to the camera, only the stand visible) — removed. Z is offset
-    // +0.15 (not 0) because the desk model's own bounding-box center is
-    // skewed right by an asymmetric extra part (a low side tray), so Z=0
-    // sits left of the main desktop's actual visual center.
-    <group position={[-0.55, DESK_SURFACE_Y, 0.15]} scale={scale} rotation={[Math.PI, 0, 0]}>
+    // causes isn't visible). A 90° X yaw was tried at one point and made the
+    // screen lie flat on the desktop instead of standing upright — reverted.
+    // X/Z offset from center because the desk model's own bounding-box
+    // center is skewed by an asymmetric extra part (a low side tray).
+    <group
+      position={[MONITOR_X, DESK_SURFACE_Y, MONITOR_Z]}
+      scale={scale}
+      rotation={[Math.PI, 0, 0]}
+    >
       <mesh geometry={positioned} castShadow receiveShadow>
-        <meshStandardMaterial color="#111318" roughness={0.35} metalness={0.4} />
+        <meshStandardMaterial
+          color="#111318"
+          roughness={0.35}
+          metalness={0.4}
+        />
       </mesh>
     </group>
   );
@@ -135,7 +180,7 @@ function MonitorMesh() {
 function CameraAim() {
   const camera = useThree((state) => state.camera);
   useEffect(() => {
-    camera.lookAt(0, 0.7, 0);
+    camera.lookAt(0, CAMERA_LOOKAT_Y, 0);
   }, [camera]);
   return null;
 }
@@ -148,7 +193,7 @@ function CameraAim() {
 export function DeskModel3D() {
   return (
     <Canvas
-      camera={{ position: [4, 1.3, 0], fov: 30 }}
+      camera={{ position: [CAMERA_X, CAMERA_Y, 0], fov: 30 }}
       gl={{ alpha: true, antialias: true }}
       dpr={[1, 1.75]}
       style={{ width: "100%", height: "100%", background: "transparent" }}
