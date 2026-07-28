@@ -219,12 +219,14 @@ export function RoomStage() {
         </div>
 
         {/* Bookshelf — a real 3D model (bookcase.glb), composited the same way as the desk above.
-            Left corner, between the window (hotspot at x=16) and the desk (box starts at left=20.5%).
-            First-pass box, not visually confirmed this round (no browser/screenshot tool available) —
-            check against a fresh screenshot before nudging. */}
+            Moved right per an annotated screenshot showing it sitting inside/overlapping the window
+            glass instead of the open floor gap before the desk (box starts at left=20.5%) — narrowed
+            slightly too, to stay clear of the desk's box at the new position. Still a visually-informed
+            estimate, not a pixel-precise one (no browser/screenshot tool available this round to render
+            and re-check) — check against a fresh screenshot before nudging further. */}
         <div
           className="absolute"
-          style={{ left: "3%", width: "15%", bottom: "14%", height: "50%" }}
+          style={{ left: "9%", width: "12%", bottom: "14%", height: "50%" }}
         >
           <BookshelfModel3D />
         </div>
