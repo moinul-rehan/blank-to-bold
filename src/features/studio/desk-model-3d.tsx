@@ -1,10 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useMemo } from "react";
-import { Canvas, useLoader, useThree } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Canvas,
+  useLoader,
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import * as THREE from "three";
+import gsap from "gsap";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 /**
  * Diffuse-only textures — the source Maya/V-Ray export's normal/glossiness/
@@ -121,9 +128,19 @@ function DeskMesh() {
  * The monitor — an STL, so geometry only, no materials/UVs (STL has no
  * concept of either). Given a plain dark screen/plastic material instead of
  * trying to fake texturing that doesn't exist in the source file.
+ *
+ * The click/hover target is the mesh itself (React Three Fiber's built-in
+ * raycasting against the actual geometry), not a separately-positioned 2D
+ * hotspot — an earlier version placed an invisible CSS hotspot at a
+ * computed-but-approximate screen position, which per feedback didn't
+ * reliably land on the visible monitor and didn't cover its full area. R3F
+ * hit-tests the real mesh, so this works regardless of where the monitor
+ * actually projects on screen, and "touchable" naturally means the whole
+ * object, not a small target near it.
  */
-function MonitorMesh() {
+function MonitorMesh({ onActivate }: { onActivate: () => void }) {
   const geometry = useLoader(STLLoader, "/Studio/Monitor.stl");
+  const [hovered, setHovered] = useState(false);
 
   const { positioned, scale } = useMemo(() => {
     const geo = geometry.clone();
@@ -146,6 +163,13 @@ function MonitorMesh() {
     return { positioned: geo, scale: MONITOR_TARGET_SIZE / maxDim };
   }, [geometry]);
 
+  useEffect(() => {
+    document.body.style.cursor = hovered ? "pointer" : "auto";
+    return () => {
+      document.body.style.cursor = "auto";
+    };
+  }, [hovered]);
+
   return (
     // The source STL sits upside-down in its own coordinates (its "up" is
     // -Y, not +Y) — flipped 180° around X (swaps up/down; a monitor's
@@ -159,7 +183,23 @@ function MonitorMesh() {
       scale={scale}
       rotation={[Math.PI / 2, Math.PI, 0]}
     >
-      <mesh geometry={positioned} castShadow receiveShadow>
+      <mesh
+        geometry={positioned}
+        castShadow
+        receiveShadow
+        onClick={(event: ThreeEvent<MouseEvent>) => {
+          event.stopPropagation();
+          onActivate();
+        }}
+        onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+          event.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
+      >
+        {/* No visual hover feedback on the mesh itself, per feedback — only
+            the cursor swap above signals it's touchable, `hovered` state is
+            kept just for that. */}
         <meshStandardMaterial
           color="#111318"
           roughness={0.35}
@@ -171,17 +211,64 @@ function MonitorMesh() {
 }
 
 /**
- * Points the camera at the model's vertical middle once, on mount — no
- * pointer-driven movement. The desk should read as a fixed object in the
- * room, not something that shifts when the cursor moves (unlike the room's
- * other objects, which do react to hover — this one was tried and
- * explicitly asked to stay still).
+ * Close-up position for the monitor's own focus mode — this Canvas has a
+ * real Three.js camera already, so "camera moves in front of the monitor"
+ * can be a genuine 3D dolly instead of the CSS zoom trick the rest of the
+ * room uses (see use-room-camera.ts). Positioned close along roughly the
+ * same viewing direction as the resting camera, looking straight at the
+ * monitor's own position. Distance/height are a first-pass estimate (no
+ * browser/screenshot tool to verify actual framing) — expect to need
+ * tuning once seen.
  */
-function CameraAim() {
+const CLOSEUP_CAMERA_POSITION: [number, number, number] = [
+  MONITOR_X + 1.3,
+  1.85,
+  0.5,
+];
+const CLOSEUP_LOOKAT: [number, number, number] = [MONITOR_X, 1.7, 0.5];
+
+/**
+ * Points the camera at the model's vertical middle at rest — no
+ * pointer-driven movement (the desk should read as fixed in the room,
+ * unlike objects that tilt on hover — tried once, explicitly asked to stay
+ * still). When `focused` (the monitor was clicked), tweens the camera to
+ * `CLOSEUP_CAMERA_POSITION`/`CLOSEUP_LOOKAT` and back — a real 3D dolly,
+ * not the flat-stage zoom the rest of the room uses, since this object
+ * already lives in its own live camera scene.
+ */
+function CameraAim({ focused }: { focused: boolean }) {
   const camera = useThree((state) => state.camera);
+  const reducedMotion = useReducedMotion();
+  const lookAt = useRef(new THREE.Vector3(0, CAMERA_LOOKAT_Y, 0));
+
   useEffect(() => {
-    camera.lookAt(0, CAMERA_LOOKAT_Y, 0);
+    camera.lookAt(lookAt.current);
   }, [camera]);
+
+  useEffect(() => {
+    const [px, py, pz] = focused
+      ? CLOSEUP_CAMERA_POSITION
+      : [CAMERA_X, CAMERA_Y, 0];
+    const [lx, ly, lz] = focused ? CLOSEUP_LOOKAT : [0, CAMERA_LOOKAT_Y, 0];
+    const duration = reducedMotion ? 0 : 1.1;
+
+    gsap.to(camera.position, {
+      x: px,
+      y: py,
+      z: pz,
+      duration,
+      ease: "power3.inOut",
+      onUpdate: () => camera.lookAt(lookAt.current),
+    });
+    gsap.to(lookAt.current, {
+      x: lx,
+      y: ly,
+      z: lz,
+      duration,
+      ease: "power3.inOut",
+    });
+  }, [focused, camera, reducedMotion]);
+
   return null;
 }
 
@@ -190,7 +277,13 @@ function CameraAim() {
  * discussed exception to the rest of the room's flat-image approach, since
  * this specific asset only exists as a 3D model, not a render.
  */
-export function DeskModel3D() {
+export function DeskModel3D({
+  onMonitorActivate,
+  monitorFocused = false,
+}: {
+  onMonitorActivate: () => void;
+  monitorFocused?: boolean;
+}) {
   return (
     <Canvas
       // fov is Three.js's *vertical* field of view — fixed regardless of the
@@ -207,10 +300,10 @@ export function DeskModel3D() {
       <ambientLight intensity={0.5} />
       <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
       <directionalLight position={[-4, 2, -2]} intensity={0.3} />
-      <CameraAim />
+      <CameraAim focused={monitorFocused} />
       <Suspense fallback={null}>
         <DeskMesh />
-        <MonitorMesh />
+        <MonitorMesh onActivate={onMonitorActivate} />
       </Suspense>
     </Canvas>
   );

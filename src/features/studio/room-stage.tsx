@@ -22,7 +22,6 @@ import { BookshelfModel3D } from "@/features/studio/bookshelf-model-3d";
 import { WallBoard } from "@/features/studio/wall-board";
 import {
   AboutPanel,
-  ProjectsPanel,
   ProcessPanel,
   JournalPanel,
   ExperimentsPanel,
@@ -34,7 +33,6 @@ import {
 
 const PANELS: Record<string, ComponentType<{ onClose: () => void }>> = {
   "photo-frame": AboutPanel,
-  monitor: ProjectsPanel,
   sketchbook: ProcessPanel,
   notebook: JournalPanel,
   "sticky-notes": ExperimentsPanel,
@@ -48,13 +46,15 @@ const PANELS: Record<string, ComponentType<{ onClose: () => void }>> = {
  * Objects whose own composited visual IS the content once the camera
  * reaches them — no separate PanelShell overlay stacked on top (per the
  * master spec: "the object is the entrance to the content," not a
- * placeholder that hands off to a generic card). Currently just the wall
- * board: zooming in on it, centered and enlarged, already shows every
- * sticky note — a modal on top of that would just cover it back up.
- * `room-panels.tsx`'s `SystemsThinkingPanel` still exists (unused here) in
- * case a deeper second layer gets wired to it later.
+ * placeholder that hands off to a generic card). The wall board: zooming
+ * in on it, centered and enlarged, already shows every sticky note. The
+ * monitor: per feedback, its own real 3D camera dolly (see
+ * desk-model-3d.tsx's CameraAim) should be the whole experience, no
+ * overlay on top. `room-panels.tsx`'s `SystemsThinkingPanel`/`ProjectsPanel`
+ * still exist (unused here) in case a deeper second layer gets wired to
+ * them later.
  */
-const FOCUS_ONLY_IDS = new Set(["whiteboard"]);
+const FOCUS_ONLY_IDS = new Set(["whiteboard", "monitor"]);
 
 // Must match WallBoard's own left/top (wall-board.tsx).
 const BOARD_X = 66;
@@ -64,6 +64,18 @@ const BOARD_Y = 35;
 // that small. This is board-specific so it can end up around half the
 // viewport width when focused, independent of the backdrop's own zoom.
 const BOARD_FOCUS_SCALE = 7.3;
+
+/**
+ * Where the camera zooms to on monitor click — the monitor no longer has
+ * its own Hotspot (see `<DeskModel3D onMonitorActivate>` below: clicking
+ * uses React Three Fiber's real hit-testing against the mesh instead), but
+ * `focus()` still needs a 2D room-stage target to zoom the backdrop
+ * toward. Computed from the desk Canvas's own camera math (see
+ * desk-model-3d.tsx's MONITOR_X/Y/Z and CAMERA_*) — not visually
+ * confirmed.
+ */
+const MONITOR_FOCUS_X = 49;
+const MONITOR_FOCUS_Y = 49;
 
 /**
  * Each entry: id, camera-focus target (%), and the invisible hotspot's
@@ -120,28 +132,6 @@ const HOTSPOTS: {
     subtitle: "Thoughts, lessons, growth",
     x: 40,
     y: 80,
-  },
-  {
-    id: "monitor",
-    title: "Selected Work",
-    subtitle: "Explore my projects",
-    // Computed, not guessed: the monitor is a real 3D object inside its
-    // own camera (desk-model-3d.tsx), so its on-screen position is
-    // derivable from that camera's math rather than eyeballed. Projected
-    // the monitor's position (MONITOR_X, 1.7, 0.5) through that Canvas's
-    // camera (position, lookAt, 36° vertical FOV) to get where its screen
-    // lands within the desk's own box (~42%, ~17% of the desk canvas),
-    // then mapped that into this room-stage's coordinates via the desk
-    // box's own left/width/bottom/height (24/60/14/45). One real
-    // assumption baked in: the desk canvas's on-screen aspect ratio
-    // (guessed ~2.2, since it depends on the actual viewport, not a fixed
-    // number) — affects the horizontal estimate more than the vertical
-    // one. Replaces the old (50, 58) eyeballed guess, which sat visibly
-    // low relative to where this math puts the monitor (Y=1.7 is well
-    // above the camera's own look-at height of 0.77, so the screen should
-    // read notably higher in frame). Not visually confirmed.
-    x: 49,
-    y: 49,
   },
   {
     id: "mug",
@@ -296,7 +286,12 @@ export function RoomStage() {
           className="absolute"
           style={{ left: "24%", width: "60%", bottom: "14%", height: "45%" }}
         >
-          <DeskModel3D />
+          <DeskModel3D
+            onMonitorActivate={() =>
+              activate("monitor", { x: MONITOR_FOCUS_X, y: MONITOR_FOCUS_Y })
+            }
+            monitorFocused={focusId === "monitor"}
+          />
         </div>
 
         {/* Bookshelf — a real 3D model (bookcase.glb), composited the same way as the desk above.
